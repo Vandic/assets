@@ -1,0 +1,1627 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Metaverso Grupo Vandic Rocha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Um único mundo noturno: a interface é sempre "vidro escuro" sobre a cena 3D. */
+  :root {
+    color-scheme: dark;
+    --night: #0B1026;
+    --glass: rgba(13, 19, 44, 0.80);
+    --glass-strong: rgba(13, 19, 44, 0.92);
+    --line: rgba(244, 239, 228, 0.14);
+    --ink: #F4EFE4;
+    --muted: #AEB5CC;
+    --gold: #F2C230;
+    --red: #C8322B;
+    --green: #2FA160;
+    --blue: #4C7FD0;
+    --display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--ink);
+    font: 14px/1.45 var(--body);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  #stage { position: fixed; inset: 0; touch-action: none; }
+  #stage canvas { display: block; width: 100%; height: 100%; outline: none; }
+  [hidden] { display: none !important; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  .panel {
+    background: var(--glass);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    backdrop-filter: blur(14px) saturate(1.2);
+  }
+
+  /* Marca */
+  .brand {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px 10px 10px;
+    max-width: calc(100vw - 32px - 160px);
+  }
+  .tiles { display: grid; grid-template-columns: repeat(2, 13px); gap: 2px; flex: none; }
+  .tiles i { width: 13px; height: 13px; border-radius: 2px; display: block; }
+  .brand-eyebrow {
+    margin: 0; font: 500 10.5px/1.2 var(--mono);
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .brand-name {
+    margin: 2px 0 0; font: 800 21px/1 var(--display);
+    letter-spacing: -0.01em; white-space: nowrap;
+  }
+  .brand-name em { font-style: normal; color: var(--gold); }
+
+  /* Mapa e controles */
+  .tools {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    right: 16px;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+  .map { padding: 6px; line-height: 0; }
+  #minimap { width: 144px; height: 144px; border-radius: 9px; display: block; }
+  .tool-row { display: flex; gap: 6px; }
+  .tbtn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 11px; font-size: 12.5px; font-weight: 500;
+    cursor: pointer;
+  }
+  .tbtn:hover { border-color: rgba(242, 194, 48, 0.55); }
+  .tbtn svg { width: 14px; height: 14px; }
+  #vrslot:empty { display: none; }
+  #vrslot button {
+    position: static !important; width: auto !important; left: auto !important; bottom: auto !important;
+    padding: 7px 11px !important; font: 500 12.5px var(--body) !important;
+    border-radius: 14px !important; background: var(--glass) !important;
+    border: 1px solid var(--line) !important; color: var(--ink) !important; opacity: 1 !important;
+  }
+
+  /* Ficha do local */
+  .card {
+    position: fixed;
+    top: calc(96px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    width: min(340px, calc(100vw - 32px));
+    max-height: calc(100% - 200px);
+    overflow: auto;
+    padding: 16px 18px 18px;
+    background: var(--glass-strong);
+  }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .eyebrow {
+    margin: 0; font: 500 11px/1.3 var(--mono);
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold);
+  }
+  .close {
+    flex: none; width: 28px; height: 28px; margin: -4px -6px 0 0;
+    border-radius: 8px; border: 1px solid transparent; background: transparent;
+    color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer;
+  }
+  .close:hover { color: var(--ink); border-color: var(--line); }
+  .card h2 {
+    margin: 6px 0 8px; font: 700 26px/1.05 var(--display);
+    letter-spacing: -0.015em; text-wrap: balance;
+  }
+  .card p.text { margin: 0; color: #D9DCE8; max-width: 62ch; }
+  .facts {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin: 14px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line);
+  }
+  .facts div { min-width: 0; }
+  .facts dt {
+    font: 500 10px/1.3 var(--mono); letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .facts dd {
+    margin: 3px 0 0; font: 700 16px/1.15 var(--display);
+    font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+  }
+  .extra:empty { display: none; }
+  .extra { margin-top: 14px; }
+  .coins { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .coin-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 6px 2px; border-radius: 10px; border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.03); cursor: pointer;
+    font: 500 10px/1 var(--mono); letter-spacing: 0.04em;
+  }
+  .coin-btn:hover { border-color: rgba(242, 194, 48, 0.55); }
+  .coin-btn img { width: 34px; height: 34px; border-radius: 50%; }
+  .token { display: flex; gap: 14px; align-items: center; }
+  .token img { width: 72px; height: 72px; border-radius: 50%; flex: none; }
+  .addr {
+    display: block; margin-top: 10px; padding: 9px 10px; border-radius: 9px;
+    background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line);
+    font: 400 12px/1.4 var(--mono); overflow-wrap: anywhere; user-select: all;
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .act {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
+    border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05);
+    font-size: 13px; font-weight: 500; color: var(--ink); text-decoration: none; cursor: pointer;
+  }
+  .act.primary { background: var(--gold); color: #1A1406; border-color: var(--gold); }
+  .act:hover { filter: brightness(1.1); }
+
+  /* Locais */
+  .places {
+    position: fixed; left: 0; right: 0;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    display: flex; gap: 8px; padding: 2px 16px;
+    overflow-x: auto; justify-content: safe center;
+    scrollbar-width: none;
+  }
+  .places::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none; display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: 999px; cursor: pointer;
+    font-weight: 500; font-size: 13.5px; white-space: nowrap;
+  }
+  .chip i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+  .chip[aria-current="true"] { background: var(--ink); color: #111630; border-color: var(--ink); }
+  .chip[aria-current="true"] i { box-shadow: 0 0 0 1.5px #111630; }
+
+  .hint {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+    padding: 7px 12px; font: 400 12px/1.3 var(--mono); color: var(--muted);
+    white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
+    transition: opacity .6s;
+  }
+  .hint kbd { font: inherit; color: var(--ink); }
+
+  /* Joystick (telas de toque) */
+  .joy {
+    position: fixed; left: 24px; bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    width: 116px; height: 116px; border-radius: 50%;
+    background: rgba(13, 19, 44, 0.55); border: 1px solid var(--line);
+    touch-action: none;
+  }
+  .knob {
+    position: absolute; left: 50%; top: 50%; width: 46px; height: 46px;
+    margin: -23px 0 0 -23px; border-radius: 50%;
+    background: rgba(242, 194, 48, 0.9); box-shadow: 0 0 18px rgba(242, 194, 48, 0.5);
+  }
+
+  @media (max-width: 640px) {
+    .brand { padding: 8px 12px 8px 8px; gap: 10px; max-width: calc(100vw - 32px - 112px); }
+    .brand-name { font-size: 17px; }
+    #minimap { width: 96px; height: 96px; }
+    .tbtn span { display: none; }
+    .card {
+      top: auto; left: 16px; right: 16px; width: auto;
+      bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+      max-height: 40%;
+    }
+    .card h2 { font-size: 22px; }
+    .facts dd { font-size: 14px; }
+    .hint { display: none; }
+    .places { justify-content: flex-start; }
+  }
+  @media (max-width: 640px) and (pointer: coarse) {
+    .card { bottom: calc(214px + env(safe-area-inset-bottom, 0px)); max-height: 30%; }
+  }
+</style>
+</head>
+<body>
+<div id="stage" aria-label="Cena 3D do metaverso: Lapa, Glória e a Torre do Grupo Vandic Rocha"></div>
+
+<header class="brand panel">
+  <div class="tiles" aria-hidden="true">
+    <i style="background:#C8322B"></i><i style="background:#F2C230"></i>
+    <i style="background:#1E8A4C"></i><i style="background:#2B5FA8"></i>
+  </div>
+  <div>
+    <p class="brand-eyebrow">Grupo Vandic Rocha · Rio de Janeiro</p>
+    <p class="brand-name">Metaverso <em>Lapa</em></p>
+  </div>
+</header>
+
+<div class="tools">
+  <div class="map panel"><canvas id="minimap" width="288" height="288" aria-label="Mapa da região"></canvas></div>
+  <div class="tool-row">
+    <div id="vrslot"></div>
+    <button id="daynight" class="tbtn panel" type="button" aria-pressed="false" title="Alternar dia e noite">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <span id="dnLabel">Noite</span>
+    </button>
+  </div>
+</div>
+
+<aside id="card" class="card panel" aria-live="polite">
+  <div class="card-head">
+    <p id="cardEyebrow" class="eyebrow"></p>
+    <button id="cardClose" class="close" type="button" aria-label="Fechar ficha">×</button>
+  </div>
+  <h2 id="cardTitle"></h2>
+  <p id="cardText" class="text"></p>
+  <dl id="cardFacts" class="facts"></dl>
+  <div id="cardExtra" class="extra"></div>
+</aside>
+
+<p id="hint" class="hint panel"><kbd>W A S D</kbd> ou setas para andar · <kbd>Shift</kbd> corre · arraste para girar · clique nas moedas</p>
+
+<nav id="places" class="places" aria-label="Ir para um local"></nav>
+
+<div id="joy" class="joy" hidden><div id="knob" class="knob"></div></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
+
+/* ------------------------------------------------------------------ dados */
+
+const TOKENS = [
+  { sym: 'LAPA',   name: 'Lapa Coin',            addr: '0xC12e14135b82305637e4F3c2FE4eaB7739854D10', note: 'Moeda do escritório virtual da Lapa.' },
+  { sym: 'SET',    name: 'Moeda Setfrio',        addr: '0x6779eF4dE8343Dd8DA82158410D3934F68603f65', note: 'Setfrio Ar Condicionado e Refrigeração.' },
+  { sym: 'PTR',    name: 'Moeda Petrorio',       addr: '0xB9dFF02ba6d2BE0a3A49382f983D87ddaAd804B4', note: 'Moeda Petrorio, emblema naval.' },
+  { sym: 'PTF',    name: 'Moeda Petrorio PTF',   addr: '0xD0Af1bD51ee0132858A172D41eC769e1e3Cf9c11', note: 'Moeda Petrorio, emblema de refrigeração.' },
+  { sym: 'PET',    name: 'Pet Resgate',          addr: '0x544510c97944b0579B27c4a7FBB76412b1336601', note: 'Resgate e cuidado animal.' },
+  { sym: 'HVAC-R', name: 'Moeda HVAC-R',         addr: '0x4c3d87d7faaf04e17c9de0afbce4687aa7793995', note: 'Setor HVAC-R Brasil.' },
+  { sym: 'AVAC-R', name: 'AVAC-R 2026',          addr: '0x935CbCb59719dAC5DDc72c6d9e11b95f18834876', note: 'Aquecimento, ventilação, ar condicionado e refrigeração.' },
+  { sym: 'AVAC',   name: 'AVAC-R Coin Inc.',     addr: '0x2fe3c7dd588a1258f032a776e33266aed46256f0', note: 'Emissão institucional AVAC-R.' },
+  { sym: 'GCC',    name: 'Green Cooling Credit', addr: '0x83Df478CB43c95dAab29259A6c308C157D62a2E7', note: 'Crédito de refrigeração verde.' },
+  { sym: 'VGI',    name: 'Vandic Global Index',  addr: '0xd78342A74D251891d9Daa6D709fC3bab5803c78A', note: 'Índice global do grupo.' },
+];
+
+const PLACES = [
+  {
+    id: 'arcos', name: 'Arcos da Lapa', dot: '#F4EFE4',
+    eyebrow: 'Aqueduto da Carioca · concluído em 1750',
+    text: 'O antigo aqueduto levava a água do rio Carioca ao centro da cidade. Desde 1896 os trilhos lá em cima são do bonde de Santa Teresa, que atravessa os arcos o tempo todo aqui no metaverso.',
+    facts: [['Arcos', '42'], ['Extensão', '270 m'], ['Altura', '17,6 m']],
+    center: [0, 0], radius: 42, spawn: [0, 0, 22], face: [0, -1],
+  },
+  {
+    id: 'selaron', name: 'Escadaria Selarón', dot: '#C8322B',
+    eyebrow: 'Lapa → Santa Teresa · desde 1990',
+    text: 'O artista chileno Jorge Selarón cobriu os degraus com azulejos do mundo inteiro. Verde, amarelo e azul homenageiam o Brasil; o vermelho lembra o Chile. Suba até Santa Teresa.',
+    facts: [['Degraus', '215'], ['Extensão', '125 m'], ['Azulejos', '+2.000']],
+    center: [-95, -10], radius: 30, spawn: [-95, 0, 26], face: [0, -1],
+  },
+  {
+    id: 'passeio', name: 'Passeio Público', dot: '#2FA160',
+    eyebrow: 'Mestre Valentim · aberto em 1783',
+    text: 'Considerado o primeiro jardim público das Américas. No centro fica o Chafariz dos Jacarés; no terraço, as pirâmides "Saudade do Rio" e "Amor do Público".',
+    facts: [['Abertura', '1783'], ['Projeto', 'M. Valentim'], ['Chafariz', 'Jacarés']],
+    center: [80, 55], radius: 30, spawn: [80, 0, 27], face: [0, 1],
+  },
+  {
+    id: 'feira', name: 'Feira da Glória', dot: '#F2C230',
+    eyebrow: 'Glória · domingo de manhã',
+    text: 'A feira livre de domingo da Glória: hortifruti, flores, peixe, queijos, pastel e caldo de cana. As barracas ocupam a rua inteira.',
+    facts: [['Dia', 'Domingo'], ['Turno', 'Manhã'], ['Barracas', '16']],
+    center: [25, 100], radius: 42, spawn: [-26, 0, 100], face: [1, 0],
+  },
+  {
+    id: 'torre', name: 'Torre Vandic Rocha', dot: '#4C7FD0',
+    eyebrow: 'Sede do Grupo Vandic Rocha',
+    text: 'A Setfrio (climatização VRF/VRV, manutenção e PMOC) e a Petrorio ocupam os andares. Na cobertura fica o escritório virtual da Lapa Coin. Pise no círculo dourado da entrada para subir.',
+    facts: [['Andares', '14'], ['Empresas', 'Setfrio · Petrorio'], ['Cobertura', 'Lapa Coin']],
+    center: [60, -40], radius: 22, spawn: [60, 0, -20], face: [0, -1],
+  },
+  {
+    id: 'escritorio', name: 'Escritório Lapa Coin', dot: '#F2C230',
+    eyebrow: 'Cobertura · BNB Smart Chain',
+    text: 'As dez moedas do grupo giram em volta do núcleo. Toque em uma moeda para ver o contrato. O círculo dourado ao lado leva de volta à rua.',
+    facts: [['Moedas', '10'], ['Rede', 'BSC'], ['Padrão', 'BEP-20']],
+    center: [60, -45], radius: 0, spawn: [60, 56, -40.5], face: [0, -1],
+  },
+];
+
+/* ------------------------------------------------------------ utilidades */
+
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(pointer: coarse)').matches;
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(1750);
+const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+
+function canvasTex(w, h, draw, { repeat = null, srgb = true } = {}) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat[0], repeat[1]); }
+  return t;
+}
+function repeated(tex, rx, ry) {
+  const t = tex.clone();
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(rx, ry);
+  t.needsUpdate = true;
+  return t;
+}
+
+await Promise.race([
+  Promise.all([
+    document.fonts.load('800 64px "Bricolage Grotesque"'),
+    document.fonts.load('500 32px "IBM Plex Mono"'),
+  ]),
+  new Promise((r) => setTimeout(r, 1800)),
+]).catch(() => {});
+
+/* ------------------------------------------------------ renderer e cena */
+
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.xr.enabled = true;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.fog = new THREE.FogExp2(0x0d1330, 0.0022);
+
+const rig = new THREE.Group();
+scene.add(rig);
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2500);
+rig.add(camera);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.85, 0.55, 0.82);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+/* luzes */
+const hemi = new THREE.HemisphereLight(0x2a3a6a, 0x1a1510, 0.55);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0x9fb4ff, 0.6);
+sun.position.set(-80, 140, 70);
+sun.target.position.set(0, 0, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -170, right: 170, top: 170, bottom: -170, near: 1, far: 500 });
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.4;
+scene.add(sun, sun.target);
+
+/* céu */
+const skyUniforms = {
+  uTop: { value: new THREE.Color('#050a1f') },
+  uHorizon: { value: new THREE.Color('#2a2150') },
+};
+const sky = new THREE.Mesh(
+  new THREE.SphereGeometry(1400, 32, 16),
+  new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: skyUniforms,
+    vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: 'uniform vec3 uTop; uniform vec3 uHorizon; varying vec3 vDir; void main(){ float h = clamp(vDir.y, 0.0, 1.0); vec3 c = mix(uHorizon, uTop, pow(h, 0.55)); if (vDir.y < 0.0) c = uHorizon * 0.7; gl_FragColor = vec4(c, 1.0); }',
+  })
+);
+scene.add(sky);
+
+const stars = (() => {
+  const n = 1600, p = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const th = rand() * Math.PI * 2, ph = Math.acos(rand() * 0.95);
+    p[i * 3] = Math.sin(ph) * Math.cos(th) * 1300;
+    p[i * 3 + 1] = Math.cos(ph) * 1300;
+    p[i * 3 + 2] = Math.sin(ph) * Math.sin(th) * 1300;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  return new THREE.Points(g, new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, color: 0xffffff, fog: false, transparent: true, opacity: 0.85 }));
+})();
+scene.add(stars);
+
+const moon = new THREE.Mesh(
+  new THREE.SphereGeometry(18, 24, 16),
+  new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 2.2, 2.0), fog: false })
+);
+moon.position.set(-520, 620, -900);
+scene.add(moon);
+
+/* ------------------------------------------------------------- materiais */
+
+const PAL = { red: '#C8322B', yellow: '#F2C230', green: '#1E8A4C', blue: '#2B5FA8', white: '#F4EFE4', black: '#1b1b1f' };
+
+function drawTile(g, x, y, s, base) {
+  g.fillStyle = base; g.fillRect(x, y, s, s);
+  const accent = pick([PAL.white, PAL.yellow, PAL.blue, PAL.black, PAL.red, PAL.green]);
+  g.fillStyle = accent; g.strokeStyle = accent; g.lineWidth = s * 0.07;
+  const kind = Math.floor(rand() * 7);
+  const c = s / 2;
+  if (kind === 0) { g.beginPath(); g.arc(x + c, y + c, s * 0.28, 0, Math.PI * 2); g.fill(); }
+  else if (kind === 1) { g.beginPath(); g.moveTo(x + c, y + s * 0.12); g.lineTo(x + s * 0.88, y + c); g.lineTo(x + c, y + s * 0.88); g.lineTo(x + s * 0.12, y + c); g.closePath(); g.fill(); }
+  else if (kind === 2) { g.strokeRect(x + s * 0.16, y + s * 0.16, s * 0.68, s * 0.68); }
+  else if (kind === 3) { for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { g.beginPath(); g.arc(x + s * (0.2 + i * 0.3), y + s * (0.2 + j * 0.3), s * 0.06, 0, 7); g.fill(); } }
+  else if (kind === 4) { g.fillStyle = PAL.white; g.fillRect(x, y, s, s); g.strokeStyle = PAL.blue; g.lineWidth = s * 0.05; g.beginPath(); g.arc(x, y, s * 0.5, 0, 7); g.arc(x + s, y + s, s * 0.5, 0, 7); g.stroke(); g.beginPath(); g.arc(x + c, y + c, s * 0.14, 0, 7); g.fillStyle = PAL.blue; g.fill(); }
+  else if (kind === 5) { g.beginPath(); g.moveTo(x, y + s); g.lineTo(x + s, y); g.stroke(); }
+  // kind 6: azulejo liso
+  g.strokeStyle = 'rgba(245,242,235,0.95)'; g.lineWidth = 3; g.strokeRect(x + 1.5, y + 1.5, s - 3, s - 3);
+}
+const mosaicColors = [PAL.red, PAL.red, PAL.red, PAL.yellow, PAL.green, PAL.blue, PAL.red, PAL.yellow];
+const mosaicTex = canvasTex(512, 512, (g) => {
+  for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) drawTile(g, i * 64, j * 64, 64, pick(mosaicColors));
+}, { repeat: [0.25, 0.25] });
+const riserTex = [PAL.red, PAL.yellow, PAL.green, PAL.blue, PAL.red, PAL.white].map((base) =>
+  canvasTex(1024, 64, (g) => { for (let i = 0; i < 16; i++) drawTile(g, i * 64, 0, 64, rand() < 0.75 ? base : pick(mosaicColors)); })
+);
+
+const plasterTex = canvasTex(256, 256, (g, w, h) => {
+  g.fillStyle = '#efe9dc'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 2600; i++) { g.fillStyle = `rgba(${rand() < 0.5 ? '90,80,60' : '255,255,255'},${rand() * 0.06})`; g.fillRect(rand() * w, rand() * h, 3, 3); }
+  for (let i = 0; i < 14; i++) { g.fillStyle = 'rgba(120,105,80,0.05)'; g.beginPath(); g.ellipse(rand() * w, rand() * h, 20 + rand() * 40, 6 + rand() * 12, 0, 0, 7); g.fill(); }
+}, { repeat: [0.2, 0.2] });
+
+const asphaltTex = canvasTex(512, 512, (g, w, h) => {
+  g.fillStyle = '#34374a'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 6000; i++) { g.fillStyle = `rgba(255,255,255,${rand() * 0.05})`; g.fillRect(rand() * w, rand() * h, 2, 2); }
+}, { repeat: [90, 110] });
+
+const waveTex = canvasTex(512, 512, (g, w, h) => {
+  g.fillStyle = '#e8e2d4'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#26262d';
+  for (let y = -64; y < h + 64; y += 64) {
+    g.beginPath();
+    for (let x = 0; x <= w; x += 4) g.lineTo(x, y + Math.sin((x / w) * Math.PI * 2) * 16);
+    for (let x = w; x >= 0; x -= 4) g.lineTo(x, y + 24 + Math.sin((x / w) * Math.PI * 2) * 16);
+    g.closePath(); g.fill();
+  }
+}, { repeat: [16, 5] });
+
+/* fachada colonial: 4 vãos × 4 andares, com mapa de janelas acesas */
+function facadePair(seed) {
+  const r = mulberry32(seed);
+  const lit = [];
+  const map = canvasTex(256, 256, (g) => {
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, 256, 256);
+    for (let fy = 0; fy < 4; fy++) for (let bx = 0; bx < 4; bx++) {
+      const x = bx * 64 + 18, y = fy * 64 + 12;
+      g.fillStyle = '#e9e4da'; g.fillRect(x - 5, y - 5, 38, 52);
+      g.fillStyle = '#2b2f3c'; g.beginPath(); g.moveTo(x, y + 42); g.lineTo(x, y + 12); g.arc(x + 14, y + 12, 14, Math.PI, 0); g.lineTo(x + 28, y + 42); g.closePath(); g.fill();
+      g.fillStyle = '#3f6b52'; g.fillRect(x - 4, y + 6, 4, 36); g.fillRect(x + 28, y + 6, 4, 36);
+      g.fillStyle = '#d8d2c6'; g.fillRect(x - 6, y + 42, 40, 4);
+      lit.push(r() < 0.45);
+    }
+    g.fillStyle = 'rgba(0,0,0,0.08)'; g.fillRect(0, 60, 256, 3); g.fillRect(0, 124, 256, 3); g.fillRect(0, 188, 256, 3);
+  });
+  const emissive = canvasTex(256, 256, (g) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, 256, 256);
+    let k = 0;
+    for (let fy = 0; fy < 4; fy++) for (let bx = 0; bx < 4; bx++) {
+      if (lit[k++]) {
+        const x = bx * 64 + 18, y = fy * 64 + 12;
+        g.fillStyle = r() < 0.7 ? '#ffc977' : '#ffe7b8';
+        g.beginPath(); g.moveTo(x, y + 42); g.lineTo(x, y + 12); g.arc(x + 14, y + 12, 14, Math.PI, 0); g.lineTo(x + 28, y + 42); g.closePath(); g.fill();
+      }
+    }
+  });
+  return { map, emissive };
+}
+const facades = [facadePair(11), facadePair(23), facadePair(37)];
+const nightMats = []; // materiais cujo emissive muda com dia/noite
+const lampMats = [];
+
+function roofMat(color) { return new THREE.MeshStandardMaterial({ color, roughness: 0.9 }); }
+const terracotta = roofMat('#9c4a2f');
+
+function building(x, z, w, d, h, color, base = 0) {
+  const f = facades[Math.floor(rand() * facades.length)];
+  const rx = Math.max(1, Math.round(w / 12)), ry = Math.max(1, Math.round(h / 12));
+  const side = new THREE.MeshStandardMaterial({
+    color, roughness: 0.85,
+    map: repeated(f.map, rx, ry),
+    emissive: 0xffffff, emissiveMap: repeated(f.emissive, rx, ry), emissiveIntensity: 1.2,
+  });
+  const sideD = new THREE.MeshStandardMaterial({
+    color, roughness: 0.85,
+    map: repeated(f.map, Math.max(1, Math.round(d / 12)), ry),
+    emissive: 0xffffff, emissiveMap: repeated(f.emissive, Math.max(1, Math.round(d / 12)), ry), emissiveIntensity: 1.2,
+  });
+  nightMats.push(side, sideD);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [sideD, sideD, terracotta, terracotta, side, side]);
+  m.position.set(x, base + h / 2, z);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m);
+  // telhado em duas águas
+  const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.01, Math.min(w, d) * 0.62, 2.2, 4, 1), terracotta);
+  roof.rotation.y = Math.PI / 4;
+  roof.scale.set(w / Math.min(w, d), 1, d / Math.min(w, d));
+  roof.position.set(x, base + h + 1.1, z);
+  roof.castShadow = true;
+  scene.add(roof);
+  colliders.push({ x0: x - w / 2, x1: x + w / 2, z0: z - d / 2, z1: z + d / 2, h: base + h });
+  return m;
+}
+
+function signTex(text, { w = 1024, h = 160, fg = '#F4EFE4', bg = null, font = '800 96px "Bricolage Grotesque", sans-serif', pad = 0 } = {}) {
+  return canvasTex(w, h, (g) => {
+    if (bg) { g.fillStyle = bg; g.beginPath(); g.roundRect(pad, pad, w - pad * 2, h - pad * 2, (h - pad * 2) / 2); g.fill(); }
+    g.fillStyle = fg; g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(text, w / 2, h / 2 + 4, w - 40);
+  });
+}
+function label(text, x, y, z, place) {
+  const t = canvasTex(640, 150, (g, w, h) => {
+    g.fillStyle = 'rgba(11,16,38,0.82)'; g.beginPath(); g.roundRect(8, 8, w - 16, h - 16, 60); g.fill();
+    g.strokeStyle = 'rgba(242,194,48,0.85)'; g.lineWidth = 4; g.stroke();
+    g.fillStyle = '#F4EFE4'; g.font = '800 64px "Bricolage Grotesque", sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, w / 2, h / 2 + 3, w - 60);
+  });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false, transparent: true, fog: false }));
+  s.scale.set(17, 4, 1);
+  s.position.set(x, y, z);
+  s.userData.place = place;
+  scene.add(s);
+  return s;
+}
+
+/* ------------------------------------------------------------ o mundo */
+
+const colliders = [];   // {x0,x1,z0,z1,h}
+const pickables = [];   // meshes clicáveis
+const spinners = [];    // hélices de condensadoras
+
+/* chão e ruas */
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 900), new THREE.MeshStandardMaterial({ map: asphaltTex, roughness: 0.95 }));
+ground.rotation.x = -Math.PI / 2;
+ground.position.set(-150, 0, 100);
+ground.receiveShadow = true;
+scene.add(ground);
+
+const plaza = new THREE.Mesh(new THREE.PlaneGeometry(150, 44), new THREE.MeshStandardMaterial({ map: waveTex, color: '#d9d3c6', roughness: 0.8 }));
+plaza.rotation.x = -Math.PI / 2;
+plaza.position.set(0, 0.02, 4);
+plaza.receiveShadow = true;
+scene.add(plaza);
+
+/* baía de Guanabara */
+const waterUniforms = {
+  uTime: { value: 0 },
+  uDeep: { value: new THREE.Color('#06122e') },
+  uShallow: { value: new THREE.Color('#123a6a') },
+  uFog: { value: new THREE.Color('#0d1330') },
+  uDensity: { value: 0.0022 },
+  uGlint: { value: 1.0 },
+};
+const water = new THREE.Mesh(
+  new THREE.PlaneGeometry(900, 1100, 1, 1),
+  new THREE.ShaderMaterial({
+    uniforms: waterUniforms, fog: false,
+    vertexShader: 'varying vec3 vW; varying float vDepth; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; vec4 mv = viewMatrix * w; vDepth = -mv.z; gl_Position = projectionMatrix * mv; }',
+    fragmentShader: `uniform float uTime; uniform vec3 uDeep; uniform vec3 uShallow; uniform vec3 uFog; uniform float uDensity; uniform float uGlint;
+      varying vec3 vW; varying float vDepth;
+      void main(){
+        float w = sin(vW.x*0.09 + uTime*0.8) * sin(vW.z*0.07 - uTime*0.6) + 0.5*sin((vW.x+vW.z)*0.21 + uTime*1.3);
+        vec3 c = mix(uDeep, uShallow, 0.5 + 0.35*w);
+        float g = pow(max(0.0, sin(vW.x*0.7 + uTime*2.0) * sin(vW.z*0.53 - uTime*1.7)), 24.0);
+        c += vec3(1.0,0.85,0.55) * g * 0.9 * uGlint;
+        float f = 1.0 - exp(-pow(uDensity * vDepth, 2.0));
+        gl_FragColor = vec4(mix(c, uFog, f), 1.0);
+      }`,
+  })
+);
+water.rotation.x = -Math.PI / 2;
+water.position.set(600, -0.4, 100);
+scene.add(water);
+const seawall = new THREE.Mesh(new THREE.BoxGeometry(2, 1.2, 900), new THREE.MeshStandardMaterial({ color: '#8d8a80', roughness: 0.9 }));
+seawall.position.set(151, 0.2, 100);
+scene.add(seawall);
+
+/* Pão de Açúcar, Urca e Corcovado com o Cristo */
+const rockMat = new THREE.MeshStandardMaterial({ color: '#2d3a33', roughness: 1, flatShading: true });
+function morro(x, z, sx, sy, sz) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), rockMat);
+  m.scale.set(sx, sy, sz); m.position.set(x, 0, z);
+  scene.add(m);
+}
+morro(360, 330, 42, 120, 40);
+morro(300, 340, 36, 62, 34);
+morro(-300, 380, 90, 230, 80);
+morro(-420, 320, 120, 140, 110);
+const cristoMat = new THREE.MeshStandardMaterial({ color: '#f4efe4', emissive: '#ffffff', emissiveIntensity: 1.4 });
+lampMats.push({ mat: cristoMat, night: 1.4, day: 0 });
+const cristo = new THREE.Group();
+const cb = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), cristoMat);
+const ca = new THREE.Mesh(new THREE.BoxGeometry(16, 2.4, 2.4), cristoMat); ca.position.y = 5;
+cristo.add(cb, ca);
+cristo.position.set(-300, 238, 380);
+scene.add(cristo);
+
+/* Arcos da Lapa: 21 módulos × 2 níveis = 42 arcos */
+function archShape(W, H, open, springY) {
+  const r = open / 2, s = new THREE.Shape();
+  s.moveTo(-W / 2, 0); s.lineTo(-r, 0); s.lineTo(-r, springY);
+  s.absarc(0, springY, r, Math.PI, 0, true);
+  s.lineTo(r, 0); s.lineTo(W / 2, 0); s.lineTo(W / 2, H); s.lineTo(-W / 2, H); s.closePath();
+  return s;
+}
+const arcMat = new THREE.MeshStandardMaterial({ map: plasterTex, color: '#f3eee4', roughness: 0.85 });
+const lowerGeo = new THREE.ExtrudeGeometry(archShape(6, 9.2, 3.6, 5.8), { depth: 4.2, bevelEnabled: false, curveSegments: 14 });
+lowerGeo.translate(0, 0, -2.1);
+const upperGeo = new THREE.ExtrudeGeometry(archShape(6, 8.4, 3.9, 4.4), { depth: 3.4, bevelEnabled: false, curveSegments: 14 });
+upperGeo.translate(0, 9.2, -1.7);
+const lower = new THREE.InstancedMesh(lowerGeo, arcMat, 21);
+const upper = new THREE.InstancedMesh(upperGeo, arcMat, 21);
+const tmp = new THREE.Object3D();
+for (let i = 0; i < 21; i++) {
+  tmp.position.set(-60 + i * 6, 0, 0); tmp.updateMatrix();
+  lower.setMatrixAt(i, tmp.matrix); upper.setMatrixAt(i, tmp.matrix);
+}
+for (const m of [lower, upper]) { m.castShadow = true; m.receiveShadow = true; m.userData.place = 'arcos'; scene.add(m); pickables.push(m); }
+const cornice = new THREE.Mesh(new THREE.BoxGeometry(126.6, 0.5, 4.6), arcMat);
+cornice.position.set(0, 9.2, 0); cornice.castShadow = true; scene.add(cornice);
+const deck = new THREE.Mesh(new THREE.BoxGeometry(126.6, 0.6, 3.8), arcMat);
+deck.position.set(0, 17.3, 0); deck.castShadow = true; scene.add(deck);
+const railMat = new THREE.MeshStandardMaterial({ color: '#555a66', metalness: 0.8, roughness: 0.35 });
+for (const z of [-0.7, 0.7]) {
+  const r = new THREE.Mesh(new THREE.BoxGeometry(126, 0.14, 0.14), railMat);
+  r.position.set(0, 17.67, z); scene.add(r);
+}
+for (let k = 0; k <= 21; k++) colliders.push({ x0: -63 + k * 6 - 1.2, x1: -63 + k * 6 + 1.2, z0: -2.1, z1: 2.1, h: 17.6 });
+
+/* bonde de Santa Teresa */
+const bonde = new THREE.Group();
+const bondeYellow = new THREE.MeshStandardMaterial({ color: '#F2B705', roughness: 0.45, metalness: 0.1 });
+const bondeBody = new THREE.Mesh(new THREE.BoxGeometry(7, 1.7, 2.3), bondeYellow);
+bondeBody.position.y = 1.0;
+const bondeWin = new THREE.MeshStandardMaterial({ color: '#1d2230', emissive: '#ffcf7a', emissiveIntensity: 1.3 });
+lampMats.push({ mat: bondeWin, night: 1.3, day: 0 });
+const band = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.7, 2.34), bondeWin);
+band.position.y = 1.4;
+const bondeRoof = new THREE.Mesh(new THREE.BoxGeometry(7.4, 0.25, 2.6), new THREE.MeshStandardMaterial({ color: '#3a3f4a' }));
+bondeRoof.position.y = 2.0;
+const headMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.7, 2) });
+const h1 = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 8), headMat); h1.position.set(3.55, 0.8, 0);
+const h2 = h1.clone(); h2.position.x = -3.55;
+bonde.add(bondeBody, band, bondeRoof, h1, h2);
+bonde.traverse((o) => { o.castShadow = true; });
+bonde.position.set(0, 17.6, 0);
+scene.add(bonde);
+
+/* Escadaria Selarón: 60 degraus aqui, 215 na real */
+const STAIR = { x: -95, half: 3.5, z0: 20, n: 60, rise: 0.25 };
+const treadMat = new THREE.MeshStandardMaterial({ color: '#8a2d25', roughness: 0.7 });
+const massMat = new THREE.MeshStandardMaterial({ color: '#5a3a32', roughness: 0.95 });
+{
+  const stepGeo = new THREE.BoxGeometry(STAIR.half * 2, STAIR.rise, 1);
+  const groups = riserTex.map((tex) => {
+    const riser = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.35, metalness: 0.05 });
+    return { mats: [massMat, massMat, treadMat, massMat, riser, massMat], idx: [] };
+  });
+  for (let i = 0; i < STAIR.n; i++) groups[Math.floor(rand() * groups.length)].idx.push(i);
+  for (const gr of groups) {
+    if (!gr.idx.length) continue;
+    const im = new THREE.InstancedMesh(stepGeo, gr.mats, gr.idx.length);
+    gr.idx.forEach((i, k) => {
+      tmp.position.set(STAIR.x, (i + 0.5) * STAIR.rise, STAIR.z0 - i - 0.5); tmp.updateMatrix();
+      im.setMatrixAt(k, tmp.matrix);
+    });
+    im.receiveShadow = true; im.castShadow = true; im.userData.place = 'selaron';
+    scene.add(im); pickables.push(im);
+  }
+  // massa sob os degraus
+  const fillShape = new THREE.Shape();
+  fillShape.moveTo(0, 0); fillShape.lineTo(STAIR.n, 0); fillShape.lineTo(STAIR.n, STAIR.n * STAIR.rise - STAIR.rise); fillShape.lineTo(1, 0); fillShape.closePath();
+  const fill = new THREE.Mesh(new THREE.ExtrudeGeometry(fillShape, { depth: STAIR.half * 2, bevelEnabled: false }), massMat);
+  fill.rotation.y = Math.PI / 2;
+  fill.position.set(STAIR.x - STAIR.half, 0, STAIR.z0);
+  scene.add(fill);
+  // muretas de mosaico
+  const wallShape = new THREE.Shape();
+  wallShape.moveTo(-2, 0); wallShape.lineTo(STAIR.n, 0); wallShape.lineTo(STAIR.n, STAIR.n * STAIR.rise + 1.6); wallShape.lineTo(-2, 1.6); wallShape.closePath();
+  const wallGeo = new THREE.ExtrudeGeometry(wallShape, { depth: 0.8, bevelEnabled: false });
+  const wallMat = new THREE.MeshStandardMaterial({ map: mosaicTex, roughness: 0.35 });
+  for (const wx of [STAIR.x - STAIR.half - 0.8, STAIR.x + STAIR.half]) {
+    const wm = new THREE.Mesh(wallGeo, wallMat);
+    wm.rotation.y = Math.PI / 2;
+    wm.position.set(wx, 0, STAIR.z0);
+    wm.castShadow = true; wm.receiveShadow = true; wm.userData.place = 'selaron';
+    scene.add(wm); pickables.push(wm);
+    colliders.push({ x0: wx, x1: wx + 0.8, z0: STAIR.z0 - STAIR.n, z1: STAIR.z0 + 2, h: 40 });
+  }
+}
+
+/* Santa Teresa: platô no alto da escadaria */
+{
+  const grassTop = new THREE.MeshStandardMaterial({ color: '#2f4a33', roughness: 1 });
+  const rock = new THREE.MeshStandardMaterial({ color: '#4d4a44', roughness: 1 });
+  const plateau = new THREE.Mesh(new THREE.BoxGeometry(80, 15, 70), [rock, rock, grassTop, rock, rock, rock]);
+  plateau.position.set(-100, 7.5, -75);
+  plateau.receiveShadow = true;
+  scene.add(plateau);
+  const cols = ['#e7b44a', '#d9674e', '#6fa3c7', '#e9e2cf', '#8bbf88', '#c9829f', '#f0d28a'];
+  const spots = [[-132, -52], [-120, -52], [-80, -52], [-68, -52], [-130, -72], [-112, -70], [-78, -70], [-66, -74], [-126, -96], [-104, -94], [-84, -96], [-70, -98]];
+  for (const [x, z] of spots) building(x, z, 8 + rand() * 3, 7 + rand() * 3, 6 + rand() * 4, pick(cols), 15);
+}
+
+/* Casarões da Lapa */
+{
+  const cols = ['#e7b44a', '#d9674e', '#6fa3c7', '#ebe4d2', '#8bbf88', '#c9829f', '#f0d28a', '#b8a3d9', '#e38b5a'];
+  let x = -84;
+  while (x + 13 < 54) { const w = 9 + rand() * 4; building(x + w / 2, 39, w, 10, 9 + rand() * 6, pick(cols)); x += w + 0.6; }
+  x = -56;
+  while (x + 13 < 48) { const w = 9 + rand() * 4; building(x + w / 2, -31, w, 10, 10 + rand() * 7, pick(cols)); x += w + 0.6; }
+  x = -22;
+  while (x < 72) { const w = 10 + rand() * 4; building(x + w / 2, 127, w, 10, 12 + rand() * 10, pick(cols)); x += w + 0.8; }
+  x = -22;
+  while (x + 14 < 52) { const w = 10 + rand() * 4; building(x + w / 2, 77, w, 8, 10 + rand() * 6, pick(cols)); x += w + 0.8; }
+}
+
+/* postes */
+const lampPos = [];
+for (let x = -60; x <= 60; x += 15) lampPos.push([x, 19]);
+for (let x = -50; x <= 50; x += 25) lampPos.push([x, -12]);
+for (let x = -14; x <= 66; x += 16) { lampPos.push([x, 90]); lampPos.push([x, 110]); }
+lampPos.push([-100, 23], [-90, 23], [72, 33], [88, 33], [52, -24], [68, -24], [-101, -44], [-89, -44]);
+{
+  const pole = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.13, 5.2, 8), new THREE.MeshStandardMaterial({ color: '#22252c', metalness: 0.7, roughness: 0.4 }), lampPos.length);
+  const globeMat = new THREE.MeshStandardMaterial({ color: '#fff4dc', emissive: '#ffcf85', emissiveIntensity: 4 });
+  lampMats.push({ mat: globeMat, night: 4, day: 0.15 });
+  const globe = new THREE.InstancedMesh(new THREE.SphereGeometry(0.38, 16, 10), globeMat, lampPos.length);
+  lampPos.forEach(([x, z], i) => {
+    const y0 = (x > -140 && x < -60 && z < -40) ? 15 : 0;
+    tmp.position.set(x, y0 + 2.6, z); tmp.updateMatrix(); pole.setMatrixAt(i, tmp.matrix);
+    tmp.position.set(x, y0 + 5.4, z); tmp.updateMatrix(); globe.setMatrixAt(i, tmp.matrix);
+  });
+  pole.castShadow = true;
+  scene.add(pole, globe);
+}
+const pointLights = [];
+for (const [x, y, z] of [[-40, 6, 14], [0, 6, 14], [40, 6, 14], [-95, 6, 24], [25, 6, 100], [80, 5, 55], [60, 6, -28]]) {
+  const pl = new THREE.PointLight(0xffc27a, 320, 48, 2);
+  pl.position.set(x, y, z);
+  scene.add(pl); pointLights.push(pl);
+}
+
+/* Passeio Público */
+{
+  const P = { x0: 55, x1: 105, z0: 35, z1: 75, cx: 80, cz: 55 };
+  const grass = new THREE.Mesh(new THREE.PlaneGeometry(P.x1 - P.x0, P.z1 - P.z0), new THREE.MeshStandardMaterial({ color: '#2d5a37', roughness: 1 }));
+  grass.rotation.x = -Math.PI / 2; grass.position.set(P.cx, 0.03, P.cz); grass.receiveShadow = true;
+  scene.add(grass);
+  const gravel = new THREE.MeshStandardMaterial({ color: '#cbbf9f', roughness: 1 });
+  const p1 = new THREE.Mesh(new THREE.PlaneGeometry(4, P.z1 - P.z0), gravel); p1.rotation.x = -Math.PI / 2; p1.position.set(P.cx, 0.05, P.cz);
+  const p2 = new THREE.Mesh(new THREE.PlaneGeometry(P.x1 - P.x0, 4), gravel); p2.rotation.x = -Math.PI / 2; p2.position.set(P.cx, 0.05, P.cz);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(6.5, 9.5, 48), gravel); ring.rotation.x = -Math.PI / 2; ring.position.set(P.cx, 0.06, P.cz);
+  for (const m of [p1, p2, ring]) { m.receiveShadow = true; scene.add(m); }
+
+  // gradil de ferro com portão ao norte
+  const posts = [];
+  for (let x = P.x0; x <= P.x1; x += 1) { if (Math.abs(x - P.cx) > 4) posts.push([x, P.z0]); posts.push([x, P.z1]); }
+  for (let z = P.z0; z <= P.z1; z += 1) { posts.push([P.x0, z]); posts.push([P.x1, z]); }
+  const iron = new THREE.MeshStandardMaterial({ color: '#1f3a2c', metalness: 0.6, roughness: 0.5 });
+  const pm = new THREE.InstancedMesh(new THREE.BoxGeometry(0.1, 1.8, 0.1), iron, posts.length);
+  posts.forEach(([x, z], i) => { tmp.position.set(x, 0.9, z); tmp.updateMatrix(); pm.setMatrixAt(i, tmp.matrix); });
+  scene.add(pm);
+  const railN1 = new THREE.Mesh(new THREE.BoxGeometry(P.cx - 4 - P.x0, 0.12, 0.12), iron); railN1.position.set((P.x0 + P.cx - 4) / 2, 1.7, P.z0);
+  const railN2 = railN1.clone(); railN2.position.x = (P.x1 + P.cx + 4) / 2;
+  const railS = new THREE.Mesh(new THREE.BoxGeometry(P.x1 - P.x0, 0.12, 0.12), iron); railS.position.set(P.cx, 1.7, P.z1);
+  const railW = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, P.z1 - P.z0), iron); railW.position.set(P.x0, 1.7, P.cz);
+  const railE = railW.clone(); railE.position.x = P.x1;
+  scene.add(railN1, railN2, railS, railW, railE);
+  colliders.push(
+    { x0: P.x0, x1: P.cx - 4, z0: P.z0 - 0.3, z1: P.z0 + 0.3, h: 1.8 },
+    { x0: P.cx + 4, x1: P.x1, z0: P.z0 - 0.3, z1: P.z0 + 0.3, h: 1.8 },
+    { x0: P.x0, x1: P.x1, z0: P.z1 - 0.3, z1: P.z1 + 0.3, h: 1.8 },
+    { x0: P.x0 - 0.3, x1: P.x0 + 0.3, z0: P.z0, z1: P.z1, h: 1.8 },
+    { x0: P.x1 - 0.3, x1: P.x1 + 0.3, z0: P.z0, z1: P.z1, h: 1.8 },
+  );
+  // portão
+  const stone = new THREE.MeshStandardMaterial({ map: plasterTex, color: '#d8d0bf', roughness: 0.9 });
+  for (const dx of [-4.6, 4.6]) {
+    const pil = new THREE.Mesh(new THREE.BoxGeometry(1.2, 5, 1.2), stone);
+    pil.position.set(P.cx + dx, 2.5, P.z0); pil.castShadow = true; scene.add(pil);
+    colliders.push({ x0: P.cx + dx - 0.6, x1: P.cx + dx + 0.6, z0: P.z0 - 0.6, z1: P.z0 + 0.6, h: 5 });
+  }
+  const gateSign = new THREE.Mesh(new THREE.PlaneGeometry(9.2, 1.4), new THREE.MeshBasicMaterial({ map: signTex('PASSEIO PÚBLICO · 1783', { fg: '#1f3a2c', bg: '#efe7d2', font: '800 84px "Bricolage Grotesque", sans-serif' }), transparent: true }));
+  gateSign.position.set(P.cx, 5.2, P.z0 - 0.02); gateSign.rotation.y = Math.PI;
+  const gateSign2 = gateSign.clone(); gateSign2.position.z = P.z0 + 0.02; gateSign2.rotation.y = 0;
+  scene.add(gateSign, gateSign2);
+
+  // Chafariz dos Jacarés
+  const basin = new THREE.Mesh(new THREE.CylinderGeometry(5, 5.3, 0.9, 48, 1, true), stone);
+  basin.position.set(P.cx, 0.45, P.cz); scene.add(basin);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(5.05, 0.25, 8, 48), stone);
+  rim.rotation.x = Math.PI / 2; rim.position.set(P.cx, 0.9, P.cz); scene.add(rim);
+  const pool = new THREE.Mesh(new THREE.CircleGeometry(5, 48), new THREE.MeshStandardMaterial({ color: '#1b4e75', roughness: 0.08, metalness: 0.3, emissive: '#0a2a44', emissiveIntensity: 0.6 }));
+  pool.rotation.x = -Math.PI / 2; pool.position.set(P.cx, 0.7, P.cz); scene.add(pool);
+  const rocks = new THREE.Mesh(new THREE.DodecahedronGeometry(1.8, 0), new THREE.MeshStandardMaterial({ color: '#6d665b', roughness: 1, flatShading: true }));
+  rocks.position.set(P.cx, 1.4, P.cz); rocks.scale.set(1.3, 0.9, 1); scene.add(rocks);
+  colliders.push({ x0: P.cx - 5.3, x1: P.cx + 5.3, z0: P.cz - 5.3, z1: P.cz + 5.3, h: 1.4 });
+  const bronze = new THREE.MeshStandardMaterial({ color: '#6b5a2e', metalness: 0.85, roughness: 0.35 });
+  const jetMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.7, 1.1, 1.6), transparent: true, opacity: 0.6 });
+  for (const s of [-1, 1]) {
+    const j = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.5, 0.8), bronze);
+    const snout = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.32, 0.5), bronze); snout.position.set(1.7, 0.05, 0);
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.35, 2.0, 6), bronze); tail.rotation.z = Math.PI / 2; tail.position.set(-2.1, -0.05, 0);
+    j.add(body, snout, tail);
+    j.position.set(P.cx - s * 0.6, 2.4, P.cz + s * 0.4);
+    j.rotation.set(0, s > 0 ? 0 : Math.PI, 0.35);
+    j.traverse((o) => { o.castShadow = true; });
+    scene.add(j);
+    const from = new THREE.Vector3(P.cx + s * 1.6, 2.9, P.cz + s * 0.4);
+    const to = new THREE.Vector3(P.cx + s * 4.2, 0.75, P.cz + s * 0.4);
+    const mid = new THREE.Vector3(P.cx + s * 3.2, 4.2, P.cz + s * 0.4);
+    const jet = new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(from, mid, to), 24, 0.07, 6), jetMat);
+    scene.add(jet);
+  }
+  // pirâmides de Mestre Valentim
+  for (const [dx, txt] of [[-10, 'SAUDADE DO RIO'], [10, 'AMOR DO PÚBLICO']]) {
+    const ped = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.6, 2.4), stone);
+    ped.position.set(P.cx + dx, 0.8, 69);
+    const ob = new THREE.Mesh(new THREE.ConeGeometry(1.1, 8.5, 4), stone);
+    ob.rotation.y = Math.PI / 4; ob.position.set(P.cx + dx, 5.85, 69);
+    const plaque = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.5), new THREE.MeshBasicMaterial({ map: signTex(txt, { fg: '#2b2418', bg: '#c7a857', font: '700 80px "IBM Plex Mono", monospace' }), transparent: true }));
+    plaque.position.set(P.cx + dx, 0.9, 67.78); plaque.rotation.y = Math.PI;
+    for (const m of [ped, ob]) { m.castShadow = true; scene.add(m); }
+    scene.add(plaque);
+    colliders.push({ x0: P.cx + dx - 1.2, x1: P.cx + dx + 1.2, z0: 67.8, z1: 70.2, h: 10 });
+  }
+  // árvores
+  const trunkG = new THREE.CylinderGeometry(0.22, 0.32, 3.4, 7);
+  const crownG = new THREE.IcosahedronGeometry(2.3, 1);
+  const trees = [];
+  let tries = 0;
+  while (trees.length < 64 && tries++ < 2000) {
+    const x = P.x0 + 2 + rand() * (P.x1 - P.x0 - 4), z = P.z0 + 2 + rand() * (P.z1 - P.z0 - 4);
+    if (Math.abs(x - P.cx) < 4 || Math.abs(z - P.cz) < 4) continue;
+    if (Math.hypot(x - P.cx, z - P.cz) < 11) continue;
+    if (z > 65 && Math.abs(Math.abs(x - P.cx) - 10) < 3.5) continue;
+    if (trees.some(([a, b]) => Math.hypot(a - x, b - z) < 3.6)) continue;
+    trees.push([x, z]);
+  }
+  const trunks = new THREE.InstancedMesh(trunkG, new THREE.MeshStandardMaterial({ color: '#4a3526', roughness: 1 }), trees.length);
+  const crowns = new THREE.InstancedMesh(crownG, new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), trees.length);
+  const greens = ['#2f6b3a', '#3c7d44', '#28593a', '#4a8a45', '#355f2f'];
+  trees.forEach(([x, z], i) => {
+    const s = 0.8 + rand() * 0.6;
+    tmp.position.set(x, 1.7 * s, z); tmp.scale.set(s, s, s); tmp.rotation.set(0, 0, 0); tmp.updateMatrix(); trunks.setMatrixAt(i, tmp.matrix);
+    tmp.position.set(x, 4.6 * s, z); tmp.rotation.set(0, rand() * 6, 0); tmp.scale.set(s * (0.9 + rand() * 0.3), s * (0.8 + rand() * 0.4), s); tmp.updateMatrix(); crowns.setMatrixAt(i, tmp.matrix);
+    crowns.setColorAt(i, new THREE.Color(pick(greens)));
+    colliders.push({ x0: x - 0.4, x1: x + 0.4, z0: z - 0.4, z1: z + 0.4, h: 6 });
+  });
+  tmp.scale.set(1, 1, 1); tmp.rotation.set(0, 0, 0);
+  trunks.castShadow = crowns.castShadow = true;
+  crowns.userData.place = 'passeio';
+  scene.add(trunks, crowns); pickables.push(crowns);
+  // palmeiras imperiais ao longo da aleia
+  const palmTrunk = new THREE.CylinderGeometry(0.22, 0.3, 11, 8);
+  const frondG = new THREE.ConeGeometry(0.5, 4.2, 4);
+  const palmMat = new THREE.MeshStandardMaterial({ color: '#8f8a7c', roughness: 0.9 });
+  const frondMat = new THREE.MeshStandardMaterial({ color: '#3d7a3d', roughness: 0.9, flatShading: true });
+  for (const z of [40, 47, 63, 70]) for (const dx of [-3.4, 3.4]) {
+    const g = new THREE.Group();
+    const t = new THREE.Mesh(palmTrunk, palmMat); t.position.y = 5.5; g.add(t);
+    for (let k = 0; k < 7; k++) {
+      const f = new THREE.Mesh(frondG, frondMat);
+      f.position.set(0, 11, 0);
+      f.rotation.set(0, (k / 7) * Math.PI * 2, 1.9);
+      f.translateY(2.0);
+      g.add(f);
+    }
+    g.position.set(P.cx + dx, 0, z);
+    g.traverse((o) => { o.castShadow = true; });
+    scene.add(g);
+    colliders.push({ x0: P.cx + dx - 0.35, x1: P.cx + dx + 0.35, z0: z - 0.35, z1: z + 0.35, h: 11 });
+  }
+}
+
+/* Feira da Glória */
+{
+  const awningColors = [['#2B5FA8', '#F4EFE4'], ['#C8322B', '#F4EFE4'], ['#1E8A4C', '#F2C230'], ['#e9772d', '#F4EFE4'], ['#6a3d9a', '#F4EFE4'], ['#F2C230', '#C8322B']];
+  const awnTex = awningColors.map(([a, b]) => canvasTex(256, 64, (g) => {
+    for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? b : a; g.fillRect(i * 32, 0, 32, 64); }
+  }));
+  const stalls = [
+    ['Hortifruti', ['#e0452f', '#e0452f', '#3f8a2f', '#f09a22']],
+    ['Frutas tropicais', ['#f5c518', '#f09a22', '#8cc63f', '#d6322b']],
+    ['Pastel e caldo de cana', ['#e8b75a', '#d99a3a', '#f3d27a', '#a8d06a']],
+    ['Flores', ['#e05a9c', '#f7d1e2', '#c33c6a', '#f2c230']],
+    ['Peixaria', ['#b9c7d6', '#8aa0b6', '#dfe8f1', '#6e8aa8']],
+    ['Queijos de Minas', ['#f4e6b8', '#f0dca0', '#e8cf86', '#fbf3d6']],
+    ['Temperos', ['#b3471f', '#d9a23a', '#6a8d2f', '#8f2f1f']],
+    ['Verduras', ['#3f8a2f', '#5aa83a', '#2f6b25', '#8cc63f']],
+  ];
+  const wood = new THREE.MeshStandardMaterial({ color: '#8a6440', roughness: 0.9 });
+  const metal = new THREE.MeshStandardMaterial({ color: '#9aa0aa', metalness: 0.8, roughness: 0.35 });
+  const fruitG = new THREE.SphereGeometry(0.16, 10, 8);
+  const fruitMax = 16 * 44;
+  const fruits = new THREE.InstancedMesh(fruitG, new THREE.MeshStandardMaterial({ roughness: 0.55 }), fruitMax);
+  let fi = 0;
+  let si = 0;
+  for (const row of [94, 106]) {
+    for (let k = 0; k < 8; k++) {
+      const x = -10 + k * 9.4;
+      const [name, cols] = stalls[(si++) % stalls.length];
+      const facing = row < 100 ? 1 : -1; // bancas viradas para o meio da rua
+      const table = new THREE.Mesh(new THREE.BoxGeometry(5, 1, 2.2), wood);
+      table.position.set(x, 0.5, row); table.castShadow = true; table.receiveShadow = true;
+      scene.add(table);
+      colliders.push({ x0: x - 2.6, x1: x + 2.6, z0: row - 1.2, z1: row + 1.2, h: 1.3 });
+      for (const [px, pz] of [[-2.4, -1.2], [2.4, -1.2], [-2.4, 1.2], [2.4, 1.2]]) {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3, 6), metal);
+        post.position.set(x + px, 1.5, row + pz); scene.add(post);
+      }
+      const awn = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.08, 3.2), [metal, metal, new THREE.MeshStandardMaterial({ map: awnTex[(k + (row > 100 ? 3 : 0)) % awnTex.length], roughness: 0.8 }), metal, metal, metal]);
+      awn.position.set(x, 3.05, row); awn.rotation.x = 0.12 * facing; awn.castShadow = true;
+      scene.add(awn);
+      const sign = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 0.6), new THREE.MeshBasicMaterial({ map: signTex(name, { fg: '#1b1b1f', bg: '#F4EFE4', font: '700 78px "Bricolage Grotesque", sans-serif' }), transparent: true, side: THREE.DoubleSide }));
+      sign.position.set(x, 2.55, row + facing * 1.62);
+      scene.add(sign);
+      for (let n = 0; n < 44 && fi < fruitMax; n++, fi++) {
+        const cx = x - 2.2 + (n % 11) * 0.42, cz = row - 0.8 + Math.floor(n / 11) * 0.42;
+        tmp.position.set(cx + (rand() - 0.5) * 0.06, 1.14 + (rand() * 0.05), cz);
+        tmp.updateMatrix(); fruits.setMatrixAt(fi, tmp.matrix);
+        fruits.setColorAt(fi, new THREE.Color(pick(cols)));
+      }
+    }
+  }
+  fruits.count = fi;
+  fruits.castShadow = true; fruits.userData.place = 'feira';
+  scene.add(fruits); pickables.push(fruits);
+  // faixa de entrada
+  const banner = new THREE.Mesh(new THREE.PlaneGeometry(22, 2.4), new THREE.MeshBasicMaterial({ map: signTex('FEIRA DA GLÓRIA · DOMINGOS', { w: 1400, fg: '#1b1b1f', bg: '#F2C230', font: '800 92px "Bricolage Grotesque", sans-serif' }), transparent: true, side: THREE.DoubleSide }));
+  banner.position.set(-19, 6.6, 100); banner.rotation.y = Math.PI / 2;
+  scene.add(banner);
+  for (const dz of [-11, 11]) {
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 7.6, 8), metal);
+    p.position.set(-19, 3.8, 100 + dz); scene.add(p);
+  }
+}
+
+/* Torre Grupo Vandic Rocha */
+const TOWER = { x: 60, z: -45, w: 20, h: 56 };
+{
+  const curtain = canvasTex(512, 512, (g) => {
+    g.fillStyle = '#1a2a44'; g.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
+      const grd = g.createLinearGradient(i * 64, j * 64, i * 64 + 64, j * 64 + 64);
+      grd.addColorStop(0, '#2c4a73'); grd.addColorStop(1, '#162640');
+      g.fillStyle = grd; g.fillRect(i * 64 + 3, j * 64 + 3, 58, 58);
+    }
+    g.fillStyle = '#9aa7ba';
+    for (let i = 0; i <= 8; i++) { g.fillRect(i * 64 - 2, 0, 4, 512); g.fillRect(0, i * 64 - 2, 512, 4); }
+  });
+  const officeLit = canvasTex(512, 512, (g) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
+      if (rand() < 0.55) { g.fillStyle = rand() < 0.6 ? '#bcd8ff' : '#ffe2a8'; g.fillRect(i * 64 + 6, j * 64 + 10, 52, 44); }
+    }
+  });
+  const mk = () => {
+    const m = new THREE.MeshStandardMaterial({
+      map: repeated(curtain, 1.25, 3.5), emissive: 0xffffff, emissiveMap: repeated(officeLit, 1.25, 3.5),
+      emissiveIntensity: 1.1, metalness: 0.75, roughness: 0.18, envMapIntensity: 1.2,
+    });
+    nightMats.push(m);
+    return m;
+  };
+  const side = mk();
+  const top = new THREE.MeshStandardMaterial({ color: '#2a3140', roughness: 0.6 });
+  const tower = new THREE.Mesh(new THREE.BoxGeometry(TOWER.w, TOWER.h, TOWER.w), [side, side, top, top, side, side]);
+  tower.position.set(TOWER.x, TOWER.h / 2, TOWER.z);
+  tower.castShadow = true; tower.receiveShadow = true; tower.userData.place = 'torre';
+  scene.add(tower); pickables.push(tower);
+  colliders.push({ x0: TOWER.x - 10, x1: TOWER.x + 10, z0: TOWER.z - 10, z1: TOWER.z + 10, h: TOWER.h });
+
+  // letreiros de fachada
+  const faceZ = TOWER.z + TOWER.w / 2 + 0.06;
+  const signs = [
+    ['GRUPO VANDIC ROCHA', 52.5, '#F2C230', 2.6],
+    ['LAPA COIN', 46, '#F4EFE4', 1.8],
+    ['PETRORIO', 30, '#F4EFE4', 1.8],
+    ['SETFRIO', 14, '#7fb2ff', 1.8],
+  ];
+  for (const [txt, y, col, hgt] of signs) {
+    const t = signTex(txt, { w: 1400, h: 180, fg: col, font: '800 120px "Bricolage Grotesque", sans-serif' });
+    const mat = new THREE.MeshBasicMaterial({ map: t, transparent: true, color: new THREE.Color(1.6, 1.6, 1.6) });
+    for (let k = 0; k < 4; k++) {
+      const p = new THREE.Mesh(new THREE.PlaneGeometry(18, hgt), mat);
+      const a = k * Math.PI / 2;
+      p.position.set(TOWER.x + Math.sin(a) * (TOWER.w / 2 + 0.06), y, TOWER.z + Math.cos(a) * (TOWER.w / 2 + 0.06));
+      p.rotation.y = a;
+      scene.add(p);
+    }
+  }
+  // marquise e entrada
+  const canopy = new THREE.Mesh(new THREE.BoxGeometry(12, 0.4, 4), new THREE.MeshStandardMaterial({ color: '#1b2030', metalness: 0.6, roughness: 0.3 }));
+  canopy.position.set(TOWER.x, 4.4, faceZ + 2); canopy.castShadow = true;
+  scene.add(canopy);
+  const doorMat = new THREE.MeshStandardMaterial({ color: '#0f1830', emissive: '#ffd89a', emissiveIntensity: 1.2 });
+  lampMats.push({ mat: doorMat, night: 1.2, day: 0.1 });
+  const door = new THREE.Mesh(new THREE.PlaneGeometry(6, 3.6), doorMat);
+  door.position.set(TOWER.x, 1.8, faceZ + 0.01);
+  scene.add(door);
+
+  // cobertura: escritório virtual Lapa Coin
+  const floorTex = canvasTex(256, 256, (g) => {
+    g.fillStyle = '#0c1226'; g.fillRect(0, 0, 256, 256);
+    g.strokeStyle = 'rgba(242,194,48,0.55)'; g.lineWidth = 2;
+    for (let i = 0; i <= 8; i++) { g.beginPath(); g.moveTo(i * 32, 0); g.lineTo(i * 32, 256); g.stroke(); g.beginPath(); g.moveTo(0, i * 32); g.lineTo(256, i * 32); g.stroke(); }
+  }, { repeat: [4, 4] });
+  const roofFloor = new THREE.Mesh(new THREE.PlaneGeometry(TOWER.w, TOWER.w), new THREE.MeshStandardMaterial({ map: floorTex, emissive: 0xffffff, emissiveMap: floorTex, emissiveIntensity: 0.6, roughness: 0.3, metalness: 0.4 }));
+  roofFloor.rotation.x = -Math.PI / 2; roofFloor.position.set(TOWER.x, TOWER.h + 0.02, TOWER.z);
+  scene.add(roofFloor);
+  const glass = new THREE.MeshStandardMaterial({ color: '#9fd0ff', transparent: true, opacity: 0.12, roughness: 0.05, metalness: 0.2, side: THREE.DoubleSide, depthWrite: false });
+  const frame = new THREE.MeshStandardMaterial({ color: '#F2C230', metalness: 0.9, roughness: 0.25, emissive: '#F2C230', emissiveIntensity: 0.25 });
+  const PV = { x0: TOWER.x - 7, x1: TOWER.x + 7, z0: TOWER.z - 7.5, z1: TOWER.z + 5.5, h: 6 };
+  const walls = [
+    [PV.x1 - PV.x0, PV.h, (PV.x0 + PV.x1) / 2, PV.z0, 0],
+    [PV.z1 - PV.z0, PV.h, PV.x0, (PV.z0 + PV.z1) / 2, Math.PI / 2],
+    [PV.z1 - PV.z0, PV.h, PV.x1, (PV.z0 + PV.z1) / 2, Math.PI / 2],
+  ];
+  for (const [w, h, x, z, ry] of walls) {
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), glass);
+    p.position.set(x, TOWER.h + h / 2, z); p.rotation.y = ry; scene.add(p);
+  }
+  const lid = new THREE.Mesh(new THREE.BoxGeometry(PV.x1 - PV.x0 + 0.4, 0.3, PV.z1 - PV.z0 + 0.4), frame);
+  lid.position.set(TOWER.x, TOWER.h + PV.h, (PV.z0 + PV.z1) / 2);
+  scene.add(lid);
+  for (const [x, z] of [[PV.x0, PV.z0], [PV.x1, PV.z0], [PV.x0, PV.z1], [PV.x1, PV.z1]]) {
+    const c = new THREE.Mesh(new THREE.BoxGeometry(0.3, PV.h, 0.3), frame);
+    c.position.set(x, TOWER.h + PV.h / 2, z); scene.add(c);
+  }
+  // condensadoras VRF da Setfrio na cobertura
+  const condMat = new THREE.MeshStandardMaterial({ color: '#dfe3e8', metalness: 0.3, roughness: 0.5 });
+  const grilleMat = new THREE.MeshStandardMaterial({ color: '#2a2e36', roughness: 0.6 });
+  const bladeMat = new THREE.MeshStandardMaterial({ color: '#3a3f4a', metalness: 0.5, roughness: 0.4 });
+  for (let k = 0; k < 4; k++) {
+    const x = TOWER.x - 7.5 + k * 5, z = TOWER.z - 8.9;
+    const box = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.8, 1.6), condMat);
+    box.position.set(x, TOWER.h + 0.9, z); box.castShadow = true; scene.add(box);
+    const grille = new THREE.Mesh(new THREE.CircleGeometry(0.62, 24), grilleMat);
+    grille.rotation.x = -Math.PI / 2; grille.position.set(x, TOWER.h + 1.81, z); scene.add(grille);
+    const fan = new THREE.Group();
+    for (let b = 0; b < 3; b++) {
+      const bl = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.03, 0.22), bladeMat);
+      bl.rotation.y = (b / 3) * Math.PI * 2; bl.position.set(Math.cos((b / 3) * Math.PI * 2) * 0.01, 0, 0);
+      fan.add(bl);
+    }
+    fan.position.set(x, TOWER.h + 1.84, z);
+    scene.add(fan); spinners.push(fan);
+    const logo = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.36), new THREE.MeshBasicMaterial({ map: signTex('SETFRIO · VRF', { fg: '#2B5FA8', font: '800 110px "Bricolage Grotesque", sans-serif' }), transparent: true }));
+    logo.position.set(x, TOWER.h + 1.2, z + 0.81); scene.add(logo);
+  }
+}
+
+/* núcleo holográfico e as moedas */
+const coinGroup = new THREE.Group();
+coinGroup.position.set(TOWER.x, TOWER.h + 2.8, TOWER.z - 1.5);
+scene.add(coinGroup);
+const coreMat = new THREE.MeshStandardMaterial({ color: '#F2C230', emissive: '#F2C230', emissiveIntensity: 1.6, metalness: 0.9, roughness: 0.2 });
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 1), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.7, 0.5), wireframe: true }));
+const coreInner = new THREE.Mesh(new THREE.IcosahedronGeometry(0.6, 2), coreMat);
+coinGroup.add(core, coreInner);
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 5.6, 16, 1, true), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.3, 0.4), transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
+beam.position.y = -0.1;
+coinGroup.add(beam);
+
+const loader = new THREE.TextureLoader();
+const coinEdge = new THREE.MeshStandardMaterial({ color: '#d4a93a', metalness: 1, roughness: 0.25 });
+const coinMeshes = [];
+TOKENS.forEach((tk, i) => {
+  const tex = loader.load(`tokens/${tk.sym}.png`);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const face = new THREE.MeshStandardMaterial({ map: tex, metalness: 0.35, roughness: 0.35, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.35 });
+  const holder = new THREE.Group();
+  const coin = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.14, 48), [coinEdge, face, face]);
+  coin.rotation.x = Math.PI / 2;
+  coin.castShadow = true;
+  coin.userData.token = tk;
+  holder.add(coin);
+  const a = (i / TOKENS.length) * Math.PI * 2;
+  holder.userData.angle = a;
+  holder.position.set(Math.sin(a) * 4.6, Math.sin(a * 2) * 0.35, Math.cos(a) * 4.6);
+  holder.rotation.y = a;
+  coinGroup.add(holder);
+  coinMeshes.push(coin);
+  pickables.push(coin);
+});
+
+/* plataformas do elevador */
+function pad(x, y, z) {
+  const g = new THREE.Group();
+  const ringM = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, 1.15, 0.3), side: THREE.DoubleSide });
+  const r = new THREE.Mesh(new THREE.RingGeometry(1.0, 1.35, 48), ringM); r.rotation.x = -Math.PI / 2;
+  const glow = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.35, 3.2, 32, 1, true), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.9, 0.7, 0.2), transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false }));
+  glow.position.y = 1.6;
+  g.add(r, glow);
+  g.position.set(x, y + 0.06, z);
+  scene.add(g);
+  return g;
+}
+const PAD_UP = { x: TOWER.x, y: 0, z: TOWER.z + TOWER.w / 2 + 6 };
+const PAD_DOWN = { x: TOWER.x + 7.8, y: TOWER.h, z: TOWER.z + 7.8 };
+pad(PAD_UP.x, PAD_UP.y, PAD_UP.z);
+pad(PAD_DOWN.x, PAD_DOWN.y, PAD_DOWN.z);
+
+/* rótulos flutuantes */
+label('Arcos da Lapa', 0, 25, 0, 'arcos');
+label('Escadaria Selarón', -95, 20, 8, 'selaron');
+label('Passeio Público', 80, 12, 33, 'passeio');
+label('Feira da Glória', 25, 9, 100, 'feira');
+label('Torre Vandic Rocha', 60, 66, -45, 'torre');
+
+/* ------------------------------------------------------------- avatar */
+
+const avatar = new THREE.Group();
+{
+  const suit = new THREE.MeshStandardMaterial({ color: '#2B5FA8', roughness: 0.45, metalness: 0.2 });
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.85, 6, 16), suit);
+  body.position.y = 0.9;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.33, 24, 16), new THREE.MeshStandardMaterial({ color: '#F4EFE4', roughness: 0.3, metalness: 0.1 }));
+  head.position.y = 1.72;
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.14, 0.2), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 1.8, 0.4) }));
+  visor.position.set(0, 1.75, 0.24);
+  const pack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.55, 0.22), new THREE.MeshStandardMaterial({ color: '#C8322B', roughness: 0.6 }));
+  pack.position.set(0, 1.05, -0.42);
+  avatar.add(body, head, visor, pack);
+  avatar.traverse((o) => { o.castShadow = true; });
+}
+scene.add(avatar);
+
+/* ----------------------------------------------------------- física simples */
+
+function groundHeight(x, z) {
+  let h = 0;
+  if (x > STAIR.x - STAIR.half && x < STAIR.x + STAIR.half && z <= STAIR.z0 && z > STAIR.z0 - STAIR.n) {
+    const i = Math.floor(STAIR.z0 - z);
+    h = Math.min(STAIR.n, i + 1) * STAIR.rise;
+  }
+  if (x > -140 && x < -60 && z <= STAIR.z0 - STAIR.n && z > -110) h = Math.max(h, 15);
+  for (const c of colliders) if (x > c.x0 && x < c.x1 && z > c.z0 && z < c.z1) h = Math.max(h, c.h);
+  return h;
+}
+
+const state = { yaw: 0, pitch: 0.32, dist: 10, vy: 0 };
+const keys = new Set();
+const joyVec = { x: 0, y: 0 };
+let moved = false;
+
+function teleport(x, y, z, fx, fz) {
+  avatar.position.set(x, y, z);
+  state.yaw = Math.atan2(-fx, -fz);
+  avatar.rotation.y = Math.atan2(fx, fz);
+}
+
+/* ------------------------------------------------------------- interface */
+
+const $ = (id) => document.getElementById(id);
+const card = $('card');
+const placesNav = $('places');
+let currentPlace = null;
+let cardDismissed = false;
+
+for (const p of PLACES) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chip panel';
+  b.dataset.place = p.id;
+  const dot = document.createElement('i');
+  dot.style.background = p.dot;
+  b.append(dot, document.createTextNode(p.name));
+  b.addEventListener('click', () => goTo(p.id));
+  placesNav.append(b);
+}
+
+function goTo(id) {
+  const p = PLACES.find((q) => q.id === id);
+  teleport(p.spawn[0], p.spawn[1], p.spawn[2], p.face[0], p.face[1]);
+  cardDismissed = false;
+  setPlace(id, true);
+}
+
+function fillFacts(pairs) {
+  const dl = $('cardFacts');
+  dl.replaceChildren();
+  for (const [k, v] of pairs) {
+    const d = document.createElement('div');
+    const dt = document.createElement('dt'); dt.textContent = k;
+    const dd = document.createElement('dd'); dd.textContent = v;
+    d.append(dt, dd); dl.append(d);
+  }
+  dl.hidden = !pairs.length;
+}
+
+function showPlace(p) {
+  $('cardEyebrow').textContent = p.eyebrow;
+  $('cardTitle').textContent = p.name;
+  $('cardText').textContent = p.text;
+  fillFacts(p.facts);
+  const extra = $('cardExtra');
+  extra.replaceChildren();
+  if (p.id === 'torre' || p.id === 'escritorio') {
+    const grid = document.createElement('div');
+    grid.className = 'coins';
+    for (const tk of TOKENS) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'coin-btn'; b.title = tk.name;
+      const img = document.createElement('img'); img.src = `tokens/${tk.sym}.png`; img.alt = '';
+      b.append(img, document.createTextNode(tk.sym));
+      b.addEventListener('click', () => showToken(tk));
+      grid.append(b);
+    }
+    extra.append(grid);
+  }
+  if (p.id === 'torre') {
+    const row = document.createElement('div'); row.className = 'actions';
+    const up = document.createElement('button'); up.type = 'button'; up.className = 'act primary'; up.textContent = 'Subir à cobertura';
+    up.addEventListener('click', () => goTo('escritorio'));
+    row.append(up); extra.append(row);
+  }
+  card.hidden = false;
+}
+
+function showToken(tk) {
+  $('cardEyebrow').textContent = 'Token · BNB Smart Chain · BEP-20';
+  $('cardTitle').textContent = `${tk.name} (${tk.sym})`;
+  $('cardText').textContent = tk.note;
+  fillFacts([]);
+  const extra = $('cardExtra');
+  extra.replaceChildren();
+  const head = document.createElement('div'); head.className = 'token';
+  const img = document.createElement('img'); img.src = `tokens/${tk.sym}.png`; img.alt = `Logo ${tk.sym}`;
+  const meta = document.createElement('div');
+  const lab = document.createElement('p'); lab.className = 'eyebrow'; lab.textContent = 'Contrato';
+  const addr = document.createElement('code'); addr.className = 'addr'; addr.textContent = tk.addr;
+  meta.append(lab, addr);
+  head.append(img, meta);
+  const row = document.createElement('div'); row.className = 'actions';
+  const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'act primary'; copy.textContent = 'Copiar contrato';
+  copy.addEventListener('click', () => {
+    navigator.clipboard.writeText(tk.addr).then(() => { copy.textContent = 'Copiado'; }, () => {
+      const r = document.createRange(); r.selectNodeContents(addr);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      copy.textContent = 'Selecionado, use Ctrl+C';
+    });
+    setTimeout(() => { copy.textContent = 'Copiar contrato'; }, 2200);
+  });
+  const scan = document.createElement('a'); scan.className = 'act'; scan.href = `https://bscscan.com/token/${tk.addr}`;
+  scan.target = '_blank'; scan.rel = 'noopener'; scan.textContent = 'Ver no BscScan';
+  const back = document.createElement('button'); back.type = 'button'; back.className = 'act'; back.textContent = 'Voltar';
+  back.addEventListener('click', () => showPlace(PLACES.find((q) => q.id === (currentPlace || 'escritorio'))));
+  row.append(copy, scan, back);
+  extra.append(head, row);
+  card.hidden = false;
+}
+
+function setPlace(id, force = false) {
+  if (id === currentPlace && !force) return;
+  currentPlace = id;
+  for (const b of placesNav.children) b.setAttribute('aria-current', b.dataset.place === id ? 'true' : 'false');
+  if (id && (!cardDismissed || force)) showPlace(PLACES.find((q) => q.id === id));
+  const active = [...placesNav.children].find((b) => b.dataset.place === id);
+  if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduced ? 'auto' : 'smooth' });
+}
+
+$('cardClose').addEventListener('click', () => { card.hidden = true; cardDismissed = true; });
+
+/* dia e noite */
+const THEMES = {
+  night: {
+    top: '#050a1f', horizon: '#2a2150', fog: '#0d1330', density: 0.0022,
+    hemi: [0x2a3a6a, 0x1a1510, 0.55], sun: [0x9fb4ff, 0.6, [-80, 140, 70]],
+    env: 0.28, bloom: 0.85, exposure: 1.05, windows: 1.2, lights: 320, stars: true,
+    deep: '#06122e', shallow: '#123a6a', glint: 1.0,
+  },
+  day: {
+    top: '#2f6fc4', horizon: '#cfe3f2', fog: '#bcd3e6', density: 0.0016,
+    hemi: [0xcfe3ff, 0x5a4a30, 1.1], sun: [0xfff0d6, 2.8, [120, 170, 90]],
+    env: 0.9, bloom: 0.22, exposure: 0.95, windows: 0.04, lights: 0, stars: false,
+    deep: '#0f4a78', shallow: '#2f86b8', glint: 0.25,
+  },
+};
+let themeName = 'night';
+function applyTheme(name) {
+  const t = THEMES[name];
+  themeName = name;
+  skyUniforms.uTop.value.set(t.top);
+  skyUniforms.uHorizon.value.set(t.horizon);
+  scene.fog.color.set(t.fog); scene.fog.density = t.density;
+  waterUniforms.uFog.value.set(t.fog); waterUniforms.uDensity.value = t.density;
+  waterUniforms.uDeep.value.set(t.deep); waterUniforms.uShallow.value.set(t.shallow); waterUniforms.uGlint.value = t.glint;
+  hemi.color.setHex(t.hemi[0]); hemi.groundColor.setHex(t.hemi[1]); hemi.intensity = t.hemi[2];
+  sun.color.setHex(t.sun[0]); sun.intensity = t.sun[1]; sun.position.set(...t.sun[2]);
+  scene.environmentIntensity = t.env;
+  bloom.strength = t.bloom;
+  renderer.toneMappingExposure = t.exposure;
+  for (const m of nightMats) m.emissiveIntensity = t.windows;
+  for (const l of lampMats) l.mat.emissiveIntensity = name === 'night' ? l.night : l.day;
+  for (const pl of pointLights) pl.intensity = t.lights;
+  stars.visible = t.stars; moon.visible = t.stars;
+  $('dnLabel').textContent = name === 'night' ? 'Noite' : 'Dia';
+  $('daynight').setAttribute('aria-pressed', name === 'day' ? 'true' : 'false');
+}
+$('daynight').addEventListener('click', () => applyTheme(themeName === 'night' ? 'day' : 'night'));
+applyTheme('night');
+
+/* WebXR (óculos VR) quando disponível */
+if (navigator.xr && navigator.xr.isSessionSupported) {
+  navigator.xr.isSessionSupported('immersive-vr').then((ok) => {
+    if (ok) $('vrslot').append(VRButton.createButton(renderer));
+  }).catch(() => {});
+}
+renderer.xr.addEventListener('sessionstart', () => { avatar.visible = false; });
+renderer.xr.addEventListener('sessionend', () => { avatar.visible = true; rig.position.set(0, 0, 0); });
+
+/* entrada: teclado */
+addEventListener('keydown', (e) => {
+  if (e.target.closest && e.target.closest('button, a, input')) { if (e.key === ' ' || e.key === 'Enter') return; }
+  const k = e.key.toLowerCase();
+  if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
+  keys.add(k);
+});
+addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+addEventListener('blur', () => keys.clear());
+
+/* entrada: arrastar para olhar, toque para selecionar */
+const canvas = renderer.domElement;
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+let drag = null;
+canvas.addEventListener('pointerdown', (e) => {
+  drag = { id: e.pointerId, x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t: performance.now() };
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (drag && drag.id === e.pointerId) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    drag.x = e.clientX; drag.y = e.clientY;
+    state.yaw -= dx * 0.0055;
+    state.pitch = THREE.MathUtils.clamp(state.pitch + dy * 0.004, -0.05, 1.25);
+  } else if (!coarse) {
+    const hit = pickAt(e.clientX, e.clientY);
+    canvas.style.cursor = hit ? 'pointer' : 'grab';
+  }
+});
+function endDrag(e) {
+  if (!drag || drag.id !== e.pointerId) return;
+  const tap = Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 7 && performance.now() - drag.t < 450;
+  drag = null;
+  if (tap) {
+    const hit = pickAt(e.clientX, e.clientY);
+    if (hit && hit.token) { cardDismissed = false; showToken(hit.token); }
+    else if (hit && hit.place) { cardDismissed = false; showPlace(PLACES.find((q) => q.id === hit.place)); }
+  }
+}
+canvas.addEventListener('pointerup', endDrag);
+canvas.addEventListener('pointercancel', (e) => { if (drag && drag.id === e.pointerId) drag = null; });
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  state.dist = THREE.MathUtils.clamp(state.dist + e.deltaY * 0.01, 4, 34);
+}, { passive: false });
+
+function pickAt(cx, cy) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects(pickables, false);
+  for (const h of hits) {
+    if (h.distance > 260) break;
+    if (h.object.userData.token) return { token: h.object.userData.token };
+    if (h.object.userData.place) return { place: h.object.userData.place };
+  }
+  return null;
+}
+
+/* entrada: joystick de toque */
+if (coarse) {
+  const joy = $('joy'), knob = $('knob');
+  joy.hidden = false;
+  $('hint').hidden = true;
+  let jid = null;
+  const setKnob = (e) => {
+    const r = joy.getBoundingClientRect();
+    let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const max = r.width / 2 - 12, l = Math.hypot(dx, dy);
+    if (l > max) { dx *= max / l; dy *= max / l; }
+    knob.style.transform = `translate(${dx}px, ${dy}px)`;
+    joyVec.x = dx / max; joyVec.y = -dy / max;
+  };
+  joy.addEventListener('pointerdown', (e) => { jid = e.pointerId; joy.setPointerCapture(jid); setKnob(e); });
+  joy.addEventListener('pointermove', (e) => { if (e.pointerId === jid) setKnob(e); });
+  const release = (e) => { if (e.pointerId !== jid) return; jid = null; joyVec.x = joyVec.y = 0; knob.style.transform = ''; };
+  joy.addEventListener('pointerup', release);
+  joy.addEventListener('pointercancel', release);
+}
+
+/* ---------------------------------------------------------------- mapa */
+
+const mm = $('minimap');
+const mctx = mm.getContext('2d');
+const MM = { x0: -150, z0: -120, size: 300 };
+const toMap = (x, z) => [((x - MM.x0) / MM.size) * mm.width, ((z - MM.z0) / MM.size) * mm.height];
+const mapBase = document.createElement('canvas');
+mapBase.width = mm.width; mapBase.height = mm.height;
+{
+  const g = mapBase.getContext('2d');
+  const S = mm.width / MM.size;
+  const rect = (x0, z0, x1, z1, c) => { const [a, b] = toMap(x0, z0); g.fillStyle = c; g.fillRect(a, b, (x1 - x0) * S, (z1 - z0) * S); };
+  g.fillStyle = '#1c2340'; g.fillRect(0, 0, mm.width, mm.height);
+  rect(150, -200, 400, 400, '#123a6a');
+  rect(-140, -110, -60, -40, '#2c4632');
+  rect(-75, -18, 75, 26, '#51513f');
+  for (const c of colliders) if (c.h > 5 && c.h < 40 && (c.x1 - c.x0) > 5) rect(c.x0, c.z0, c.x1, c.z1, '#3a4263');
+  rect(55, 35, 105, 75, '#2f6b3a');
+  rect(-20, 90, 70, 110, '#8a6a22');
+  rect(-63, -2, 63, 2, '#F4EFE4');
+  rect(-98.5, -40, -91.5, 20, '#C8322B');
+  rect(50, -55, 70, -35, '#4C7FD0');
+  rect(55, -50, 65, -40, '#F2C230');
+}
+function drawMinimap() {
+  mctx.drawImage(mapBase, 0, 0);
+  const [ax, az] = toMap(avatar.position.x, avatar.position.z);
+  mctx.save();
+  mctx.translate(ax, az);
+  mctx.rotate(-state.yaw + Math.PI);
+  mctx.fillStyle = '#F2C230'; mctx.strokeStyle = '#0B1026'; mctx.lineWidth = 3;
+  mctx.beginPath(); mctx.moveTo(0, 13); mctx.lineTo(8, -8); mctx.lineTo(0, -3); mctx.lineTo(-8, -8); mctx.closePath();
+  mctx.stroke(); mctx.fill();
+  mctx.restore();
+}
+
+/* ----------------------------------------------------------------- loop */
+
+const clock = new THREE.Clock();
+const fwd = new THREE.Vector3(), right = new THREE.Vector3(), camTarget = new THREE.Vector3();
+let lastPad = null, walkPhase = 0;
+const hint = $('hint');
+
+teleport(0, 0, 22, 0, -1);
+setPlace('arcos', true);
+
+function nearestPlace() {
+  if (avatar.position.y > 40) return 'escritorio';
+  let best = null, bd = Infinity;
+  for (const p of PLACES) {
+    if (!p.radius) continue;
+    const d = Math.hypot(avatar.position.x - p.center[0], avatar.position.z - p.center[1]);
+    if (d < p.radius && d < bd) { bd = d; best = p.id; }
+  }
+  return best;
+}
+
+function tick() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+
+  // movimento
+  let ix = joyVec.x, iy = joyVec.y;
+  if (keys.has('w') || keys.has('arrowup')) iy += 1;
+  if (keys.has('s') || keys.has('arrowdown')) iy -= 1;
+  if (keys.has('a') || keys.has('arrowleft')) ix -= 1;
+  if (keys.has('d') || keys.has('arrowright')) ix += 1;
+  const len = Math.hypot(ix, iy);
+  const p = avatar.position;
+  if (len > 0.05 && !renderer.xr.isPresenting) {
+    if (len > 1) { ix /= len; iy /= len; }
+    const speed = keys.has('shift') ? 17 : 9;
+    fwd.set(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
+    right.set(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
+    const mx = (fwd.x * iy + right.x * ix) * speed * dt;
+    const mz = (fwd.z * iy + right.z * ix) * speed * dt;
+    if (groundHeight(p.x + mx, p.z) - p.y <= 1.2) p.x += mx;
+    if (groundHeight(p.x, p.z + mz) - p.y <= 1.2) p.z += mz;
+    if (p.y > 40) {
+      p.x = THREE.MathUtils.clamp(p.x, TOWER.x - 9.4, TOWER.x + 9.4);
+      p.z = THREE.MathUtils.clamp(p.z, TOWER.z - 9.4, TOWER.z + 9.4);
+    }
+    p.x = THREE.MathUtils.clamp(p.x, -145, 148);
+    p.z = THREE.MathUtils.clamp(p.z, -115, 175);
+    const targetRot = Math.atan2(mx, mz);
+    let dr = targetRot - avatar.rotation.y;
+    dr = Math.atan2(Math.sin(dr), Math.cos(dr));
+    avatar.rotation.y += dr * Math.min(1, dt * 12);
+    walkPhase += dt * speed * 1.4;
+    if (!moved) { moved = true; hint.style.opacity = '0'; setTimeout(() => { hint.hidden = true; }, 700); }
+  }
+  const gh = groundHeight(p.x, p.z);
+  p.y += (gh - p.y) * Math.min(1, dt * (gh > p.y ? 16 : 9));
+  avatar.children[0].position.y = 0.9 + (len > 0.05 ? Math.abs(Math.sin(walkPhase)) * 0.08 : 0);
+
+  // elevador
+  const onUp = Math.hypot(p.x - PAD_UP.x, p.z - PAD_UP.z) < 1.3 && p.y < 2;
+  const onDown = Math.hypot(p.x - PAD_DOWN.x, p.z - PAD_DOWN.z) < 1.3 && p.y > 50;
+  const padNow = onUp ? 'up' : onDown ? 'down' : null;
+  if (padNow && padNow !== lastPad) {
+    if (padNow === 'up') { goTo('escritorio'); lastPad = null; }
+    else { teleport(PAD_UP.x, 0, PAD_UP.z + 5, 0, 1); lastPad = null; setPlace('torre', true); }
+  } else lastPad = padNow;
+
+  // local atual
+  const np = nearestPlace();
+  if (np && np !== currentPlace) { cardDismissed = false; setPlace(np); }
+
+  // animações
+  const anim = reduced ? 0.25 : 1;
+  const bx = Math.sin(t * 0.09 * anim) * 56;
+  const vx = Math.cos(t * 0.09 * anim);
+  bonde.position.x = bx;
+  bonde.rotation.y = vx >= 0 ? 0 : Math.PI;
+  coinGroup.rotation.y = t * 0.25 * anim;
+  coinGroup.children.forEach((c) => {
+    if (c.userData.angle === undefined) return;
+    c.children[0].rotation.z = t * 0.8 * anim;
+    c.position.y = Math.sin(c.userData.angle * 2 + t * 1.2 * anim) * 0.35;
+  });
+  core.rotation.set(t * 0.4 * anim, t * 0.6 * anim, 0);
+  for (const s of spinners) s.rotation.y = t * 9 * anim;
+  waterUniforms.uTime.value = t * anim;
+
+  // câmera
+  if (renderer.xr.isPresenting) {
+    rig.position.set(p.x, p.y, p.z);
+    renderer.render(scene, camera);
+    return;
+  }
+  camTarget.set(p.x, p.y + 1.6, p.z);
+  const cp = Math.cos(state.pitch), sp = Math.sin(state.pitch);
+  const dist = p.y > 40 ? Math.min(state.dist, 6) : state.dist;
+  camera.position.set(
+    camTarget.x + Math.sin(state.yaw) * cp * dist,
+    camTarget.y + sp * dist,
+    camTarget.z + Math.cos(state.yaw) * cp * dist
+  );
+  const minY = groundHeight(camera.position.x, camera.position.z) + 0.6;
+  if (camera.position.y < minY && minY < camTarget.y + 6) camera.position.y = minY;
+  camera.lookAt(camTarget);
+
+  drawMinimap();
+  composer.render();
+}
+renderer.setAnimationLoop(tick);
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+  bloom.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
