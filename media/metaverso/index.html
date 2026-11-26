@@ -137,7 +137,7 @@
   }
   .extra:empty { display: none; }
   .extra { margin-top: 14px; }
-  .coins { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .coins { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
   .coin-btn {
     display: flex; flex-direction: column; align-items: center; gap: 4px;
     padding: 6px 2px; border-radius: 10px; border: 1px solid var(--line);
@@ -284,16 +284,17 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 /* ------------------------------------------------------------------ dados */
 
 const TOKENS = [
-  { sym: 'LAPA',   name: 'Lapa Coin',            addr: '0xC12e14135b82305637e4F3c2FE4eaB7739854D10', note: 'Moeda do escritório virtual da Lapa.' },
-  { sym: 'SET',    name: 'Moeda Setfrio',        addr: '0x6779eF4dE8343Dd8DA82158410D3934F68603f65', note: 'Setfrio Ar Condicionado e Refrigeração.' },
-  { sym: 'PTR',    name: 'Moeda Petrorio',       addr: '0xB9dFF02ba6d2BE0a3A49382f983D87ddaAd804B4', note: 'Moeda Petrorio, emblema naval.' },
-  { sym: 'PTF',    name: 'Moeda Petrorio PTF',   addr: '0xD0Af1bD51ee0132858A172D41eC769e1e3Cf9c11', note: 'Moeda Petrorio, emblema de refrigeração.' },
+  { sym: 'LAPA',   name: 'Lapa Coin',            addr: '0xC12e14135b82305637e4F3c2FE4eaB7739854D10', note: 'Tokenizada pelo GVR. Na moeda: os Arcos, a Escadaria Selarón, o bonde e a roda de samba.' },
+  { sym: 'SET',    name: 'Moeda Setfrio',        addr: '0x6779eF4dE8343Dd8DA82158410D3934F68603f65', note: 'Setfrio Engenharia de Ar Condicionado.' },
+  { sym: 'PTR',    name: 'Moeda Petrorio',       addr: '0xB9dFF02ba6d2BE0a3A49382f983D87ddaAd804B4', note: 'Petrorio Comércio, Importação e Serviços: naval, industrial e offshore.' },
+  { sym: 'PTF',    name: 'Moeda Petrofrio',      addr: '0xD0Af1bD51ee0132858A172D41eC769e1e3Cf9c11', note: 'Petrofrio Refrigeração e Offshore.' },
   { sym: 'PET',    name: 'Pet Resgate',          addr: '0x544510c97944b0579B27c4a7FBB76412b1336601', note: 'Resgate e cuidado animal.' },
   { sym: 'HVAC-R', name: 'Moeda HVAC-R',         addr: '0x4c3d87d7faaf04e17c9de0afbce4687aa7793995', note: 'Setor HVAC-R Brasil.' },
   { sym: 'AVAC-R', name: 'AVAC-R 2026',          addr: '0x935CbCb59719dAC5DDc72c6d9e11b95f18834876', note: 'Aquecimento, ventilação, ar condicionado e refrigeração.' },
   { sym: 'AVAC',   name: 'AVAC-R Coin Inc.',     addr: '0x2fe3c7dd588a1258f032a776e33266aed46256f0', note: 'Emissão institucional AVAC-R.' },
-  { sym: 'GCC',    name: 'Green Cooling Credit', addr: '0x83Df478CB43c95dAab29259A6c308C157D62a2E7', note: 'Crédito de refrigeração verde.' },
+  { sym: 'GCC',    name: 'GVR Carbon Credit',    addr: '0x83Df478CB43c95dAab29259A6c308C157D62a2E7', note: 'Crédito de carbono do Grupo Vandic Rocha.' },
   { sym: 'VGI',    name: 'Vandic Global Index',  addr: '0xd78342A74D251891d9Daa6D709fC3bab5803c78A', note: 'Índice global do grupo.' },
+  { sym: 'GVRA',   name: 'GVR Access',           addr: null, note: 'Moeda de acesso do Grupo Vandic Rocha, emissão 2026.' },
 ];
 
 const PLACES = [
@@ -328,15 +329,15 @@ const PLACES = [
   {
     id: 'torre', name: 'Torre Vandic Rocha', dot: '#4C7FD0',
     eyebrow: 'Sede do Grupo Vandic Rocha',
-    text: 'A Setfrio (climatização VRF/VRV, manutenção e PMOC) e a Petrorio ocupam os andares. Na cobertura fica o escritório virtual da Lapa Coin. Pise no círculo dourado da entrada para subir.',
-    facts: [['Andares', '14'], ['Empresas', 'Setfrio · Petrorio'], ['Cobertura', 'Lapa Coin']],
+    text: 'A Setfrio (climatização VRF/VRV, manutenção e PMOC), a Petrorio e a Petrofrio ocupam os andares. Na cobertura fica o escritório virtual da Lapa Coin. Pise no círculo dourado da entrada para subir.',
+    facts: [['Andares', '14'], ['Empresas', '3'], ['Cobertura', 'Lapa Coin']],
     center: [60, -40], radius: 22, spawn: [60, 0, -20], face: [0, -1],
   },
   {
     id: 'escritorio', name: 'Escritório Lapa Coin', dot: '#F2C230',
     eyebrow: 'Cobertura · BNB Smart Chain',
-    text: 'As dez moedas do grupo giram em volta do núcleo. Toque em uma moeda para ver o contrato. O círculo dourado ao lado leva de volta à rua.',
-    facts: [['Moedas', '10'], ['Rede', 'BSC'], ['Padrão', 'BEP-20']],
+    text: 'As onze moedas do grupo giram em volta do núcleo. Toque em uma moeda para ver o contrato. O círculo dourado ao lado leva de volta à rua.',
+    facts: [['Moedas', '11'], ['Rede', 'BSC'], ['Padrão', 'BEP-20']],
     center: [60, -45], radius: 0, spawn: [60, 56, -40.5], face: [0, -1],
   },
 ];
@@ -1052,8 +1053,9 @@ const TOWER = { x: 60, z: -45, w: 20, h: 56 };
   const signs = [
     ['GRUPO VANDIC ROCHA', 52.5, '#F2C230', 2.6],
     ['LAPA COIN', 46, '#F4EFE4', 1.8],
-    ['PETRORIO', 30, '#F4EFE4', 1.8],
-    ['SETFRIO', 14, '#7fb2ff', 1.8],
+    ['PETRORIO', 36, '#F2C230', 1.8],
+    ['PETROFRIO', 24, '#9fd0ff', 1.8],
+    ['SETFRIO', 12, '#4fd08a', 1.8],
   ];
   for (const [txt, y, col, hgt] of signs) {
     const t = signTex(txt, { w: 1400, h: 180, fg: col, font: '800 120px "Bricolage Grotesque", sans-serif' });
@@ -1296,7 +1298,7 @@ function showPlace(p) {
 }
 
 function showToken(tk) {
-  $('cardEyebrow').textContent = 'Token · BNB Smart Chain · BEP-20';
+  $('cardEyebrow').textContent = tk.addr ? 'Token · BNB Smart Chain · BEP-20' : 'Token · contrato a publicar';
   $('cardTitle').textContent = `${tk.name} (${tk.sym})`;
   $('cardText').textContent = tk.note;
   fillFacts([]);
@@ -1306,10 +1308,13 @@ function showToken(tk) {
   const img = document.createElement('img'); img.src = `tokens/${tk.sym}.png`; img.alt = `Logo ${tk.sym}`;
   const meta = document.createElement('div');
   const lab = document.createElement('p'); lab.className = 'eyebrow'; lab.textContent = 'Contrato';
-  const addr = document.createElement('code'); addr.className = 'addr'; addr.textContent = tk.addr;
+  const addr = document.createElement('code'); addr.className = 'addr'; addr.textContent = tk.addr || 'Ainda não informado';
   meta.append(lab, addr);
   head.append(img, meta);
   const row = document.createElement('div'); row.className = 'actions';
+  const back = document.createElement('button'); back.type = 'button'; back.className = 'act'; back.textContent = 'Voltar';
+  back.addEventListener('click', () => showPlace(PLACES.find((q) => q.id === (currentPlace || 'escritorio'))));
+  if (!tk.addr) { row.append(back); extra.append(head, row); card.hidden = false; return; }
   const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'act primary'; copy.textContent = 'Copiar contrato';
   copy.addEventListener('click', () => {
     navigator.clipboard.writeText(tk.addr).then(() => { copy.textContent = 'Copiado'; }, () => {
@@ -1321,8 +1326,6 @@ function showToken(tk) {
   });
   const scan = document.createElement('a'); scan.className = 'act'; scan.href = `https://bscscan.com/token/${tk.addr}`;
   scan.target = '_blank'; scan.rel = 'noopener'; scan.textContent = 'Ver no BscScan';
-  const back = document.createElement('button'); back.type = 'button'; back.className = 'act'; back.textContent = 'Voltar';
-  back.addEventListener('click', () => showPlace(PLACES.find((q) => q.id === (currentPlace || 'escritorio'))));
   row.append(copy, scan, back);
   extra.append(head, row);
   card.hidden = false;

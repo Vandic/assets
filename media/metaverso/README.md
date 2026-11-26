@@ -10,8 +10,8 @@ Experiência 3D no navegador com a Lapa e a Glória, no Rio de Janeiro, e a sede
 | Escadaria Selarón | Degraus e muretas de azulejo, com subida até Santa Teresa |
 | Passeio Público | Portão de 1783, Chafariz dos Jacarés, pirâmides de Mestre Valentim, palmeiras imperiais |
 | Feira da Glória | 16 barracas (hortifruti, flores, peixaria, pastel e caldo de cana…) |
-| Torre Vandic Rocha | Andares da Setfrio e da Petrorio, condensadoras VRF na cobertura |
-| Escritório Lapa Coin | Cobertura com as 10 moedas do grupo girando em volta do núcleo; ao tocar numa moeda aparece o contrato BEP-20 |
+| Torre Vandic Rocha | Andares da Setfrio, da Petrorio e da Petrofrio, condensadoras VRF na cobertura |
+| Escritório Lapa Coin | Cobertura com as 11 moedas do grupo girando em volta do núcleo; ao tocar numa moeda aparece o contrato BEP-20 |
 
 ## Tecnologia
 
@@ -37,19 +37,20 @@ No celular, use o joystick da esquerda e arraste a tela para olhar. O círculo d
 
 ## Tokens (BNB Smart Chain)
 
-Os logos em `tokens/` são cópias dos arquivos em `blockchains/smartchain/assets/<contrato>/logo.png`.
+Os logos em `tokens/` são a arte enviada em novembro de 2026 (256 × 256 px). HVAC-R, AVAC e VGI continuam com a arte de `blockchains/smartchain/assets/<contrato>/logo.png`.
 
 | Símbolo | Nome | Contrato |
 | --- | --- | --- |
-| LAPA | Lapa Coin | `0xC12e14135b82305637e4F3c2FE4eaB7739854D10` |
+| LAPA | Lapa Coin (tokenizada pelo GVR) | `0xC12e14135b82305637e4F3c2FE4eaB7739854D10` |
 | SET | Moeda Setfrio | `0x6779eF4dE8343Dd8DA82158410D3934F68603f65` |
 | PTR | Moeda Petrorio | `0xB9dFF02ba6d2BE0a3A49382f983D87ddaAd804B4` |
-| PTF | Moeda Petrorio PTF | `0xD0Af1bD51ee0132858A172D41eC769e1e3Cf9c11` |
+| PTF | Moeda Petrofrio | `0xD0Af1bD51ee0132858A172D41eC769e1e3Cf9c11` |
 | PET | Pet Resgate | `0x544510c97944b0579B27c4a7FBB76412b1336601` |
 | HVAC-R | Moeda HVAC-R | `0x4c3d87d7faaf04e17c9de0afbce4687aa7793995` |
 | AVAC-R | AVAC-R 2026 | `0x935CbCb59719dAC5DDc72c6d9e11b95f18834876` |
 | AVAC | AVAC-R Coin Inc. | `0x2fe3c7dd588a1258f032a776e33266aed46256f0` |
-| GCC | Green Cooling Credit | `0x83Df478CB43c95dAab29259A6c308C157D62a2E7` |
+| GCC | GVR Carbon Credit | `0x83Df478CB43c95dAab29259A6c308C157D62a2E7` |
 | VGI | Vandic Global Index | `0xd78342A74D251891d9Daa6D709fC3bab5803c78A` |
+| GVRA | GVR Access | ainda não informado |
 
 O contrato `0xB9dF…04B4` foi adicionado no commit "Add PET token logo", mas o logo mostra "PTR · Moeda Petrorio", então aqui ele aparece como PTR.
