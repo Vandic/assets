@@ -46,9 +46,9 @@ Os logos em `tokens/` são a arte enviada em novembro de 2026 (256 × 256 px). H
 | PTR | Moeda Petrorio | `0xB9dFF02ba6d2BE0a3A49382f983D87ddaAd804B4` |
 | PTF | Moeda Petrofrio | `0xD0Af1bD51ee0132858A172D41eC769e1e3Cf9c11` |
 | PET | Pet Resgate | `0x544510c97944b0579B27c4a7FBB76412b1336601` |
-| HVAC-R | Moeda HVAC-R | `0x4c3d87d7faaf04e17c9de0afbce4687aa7793995` |
+| HVAC-R | Moeda HVAC-R | `0x4c3D87d7Faaf04E17c9DE0aFbCE4687aa7793995` |
 | AVAC-R | AVAC-R 2026 | `0x935CbCb59719dAC5DDc72c6d9e11b95f18834876` |
-| AVAC | AVAC-R Coin Inc. | `0x2fe3c7dd588a1258f032a776e33266aed46256f0` |
+| AVAC | AVAC-R Coin Inc. | `0x2Fe3c7DD588a1258f032a776e33266AeD46256F0` |
 | GCC | GVR Carbon Credit | `0x83Df478CB43c95dAab29259A6c308C157D62a2E7` |
 | VGI | Vandic Global Index | `0xd78342A74D251891d9Daa6D709fC3bab5803c78A` |
 | GVRA | GVR Access | ainda não informado |

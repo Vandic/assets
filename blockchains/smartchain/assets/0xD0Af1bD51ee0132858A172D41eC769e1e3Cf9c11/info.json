@@ -1,0 +1,11 @@
+{
+    "name": "Petrofrio Coin",
+    "website": "https://vandic.com.br",
+    "description": "PTF (Petrofrio Coin) is the BEP-20 utility token of Petrofrio Refrigeração Industrial, Naval e Offshore, part of the Grupo Vandic Rocha (GVR) ecosystem in the naval and offshore HVAC-R sector.",
+    "explorer": "https://bscscan.com/token/0xD0Af1bD51ee0132858A172D41eC769e1e3Cf9c11",
+    "type": "BEP20",
+    "symbol": "PTF",
+    "decimals": 18,
+    "status": "active",
+    "id": "0xD0Af1bD51ee0132858A172D41eC769e1e3Cf9c11"
+}

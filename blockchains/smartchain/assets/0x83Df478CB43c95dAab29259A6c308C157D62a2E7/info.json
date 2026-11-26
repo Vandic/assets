@@ -1,0 +1,11 @@
+{
+    "name": "GVR Carbon Credit",
+    "website": "https://avac-r.com.br",
+    "description": "GCC (GVR Carbon Credit) is a BEP-20 token within the Grupo Vandic Rocha (GVR) ecosystem, designed for carbon-credit accounting in the HVAC-R sector, where one GCC represents one kilogram of CO2-equivalent avoided. It uses a mint-and-burn model.",
+    "explorer": "https://bscscan.com/token/0x83Df478CB43c95dAab29259A6c308C157D62a2E7",
+    "type": "BEP20",
+    "symbol": "GCC",
+    "decimals": 18,
+    "status": "active",
+    "id": "0x83Df478CB43c95dAab29259A6c308C157D62a2E7"
+}

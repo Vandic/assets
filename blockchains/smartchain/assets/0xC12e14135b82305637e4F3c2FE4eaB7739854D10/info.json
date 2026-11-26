@@ -1,0 +1,11 @@
+{
+    "name": "Lapa Coin",
+    "website": "https://vandic.com.br",
+    "description": "LAPA (Lapa Coin) is a BEP-20 token within the Grupo Vandic Rocha (GVR) ecosystem, created for a creative-economy content initiative centered on the Lapa neighborhood of Rio de Janeiro. Total supply: 100,000,000.",
+    "explorer": "https://bscscan.com/token/0xC12e14135b82305637e4F3c2FE4eaB7739854D10",
+    "type": "BEP20",
+    "symbol": "LAPA",
+    "decimals": 18,
+    "status": "active",
+    "id": "0xC12e14135b82305637e4F3c2FE4eaB7739854D10"
+}

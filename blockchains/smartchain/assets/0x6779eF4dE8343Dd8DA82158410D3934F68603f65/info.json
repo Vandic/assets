@@ -1,0 +1,11 @@
+{
+    "name": "SETFRIO Coin",
+    "website": "https://setfrio.com.br",
+    "description": "SET (Setfrio Coin) is the BEP-20 utility token of Setfrio Ar Condicionado e Refrigeração, an air-conditioning engineering company within the Grupo Vandic Rocha (GVR) ecosystem operating in HVAC-R services.",
+    "explorer": "https://bscscan.com/token/0x6779eF4dE8343Dd8DA82158410D3934F68603f65",
+    "type": "BEP20",
+    "symbol": "SET",
+    "decimals": 18,
+    "status": "active",
+    "id": "0x6779eF4dE8343Dd8DA82158410D3934F68603f65"
+}

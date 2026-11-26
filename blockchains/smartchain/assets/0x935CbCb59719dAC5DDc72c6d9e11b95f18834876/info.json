@@ -1,0 +1,11 @@
+{
+    "name": "AVACeR Coin",
+    "website": "https://avac-r.com.br",
+    "description": "AVAC-R is a BEP-20 index token within the Grupo Vandic Rocha (GVR) ecosystem, associated with the group's HVAC-R training platform and digital applications.",
+    "explorer": "https://bscscan.com/token/0x935CbCb59719dAC5DDc72c6d9e11b95f18834876",
+    "type": "BEP20",
+    "symbol": "AVAC-R",
+    "decimals": 18,
+    "status": "active",
+    "id": "0x935CbCb59719dAC5DDc72c6d9e11b95f18834876"
+}

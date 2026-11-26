@@ -1,0 +1,11 @@
+{
+    "name": "VGI Token",
+    "website": "https://vandic.com.br",
+    "description": "VGI (Vandic Global Index) is a BEP-20 index token of the Grupo Vandic Rocha (GVR) ecosystem. Total supply: 1,000,000,000.",
+    "explorer": "https://bscscan.com/token/0xd78342A74D251891d9Daa6D709fC3bab5803c78A",
+    "type": "BEP20",
+    "symbol": "VGI",
+    "decimals": 18,
+    "status": "active",
+    "id": "0xd78342A74D251891d9Daa6D709fC3bab5803c78A"
+}

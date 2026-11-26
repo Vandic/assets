@@ -1,0 +1,11 @@
+{
+    "name": "HVAC-R Coin",
+    "website": "https://avac-r.com.br",
+    "description": "HVAC-R is a BEP-20 utility token within the Grupo Vandic Rocha (GVR) digital ecosystem, oriented to the heating, ventilation, air conditioning and refrigeration sector and used across the group's educational and digital initiatives.",
+    "explorer": "https://bscscan.com/token/0x4c3D87d7Faaf04E17c9DE0aFbCE4687aa7793995",
+    "type": "BEP20",
+    "symbol": "HVAC-R",
+    "decimals": 18,
+    "status": "active",
+    "id": "0x4c3D87d7Faaf04E17c9DE0aFbCE4687aa7793995"
+}
